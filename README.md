@@ -13,7 +13,7 @@
 ```bash
 sudo dpkg -i plexmediaserver_0.9.14.6.1620-e0b7243_amd64.deb
 
-sudo service plexmediaserer restart
+sudo service plexmediaserver restart
 ```
 
 - on OSX:
