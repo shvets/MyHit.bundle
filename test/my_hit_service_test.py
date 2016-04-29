@@ -46,5 +46,26 @@ class MyHitServiceTest(unittest.TestCase):
 
         print play_list
 
+    def test_pagination_in_popular_movies(self):
+        result = self.service.get_popular_movies(page=1)
+
+        # print(json.dumps(result, indent=4))
+
+        pagination = result['pagination']
+
+        self.assertEqual(pagination['has_next'], True)
+        self.assertEqual(pagination['has_previous'], False)
+        self.assertEqual(pagination['page'], 1)
+
+        result = self.service.get_popular_movies(page=2)
+
+        # print(json.dumps(result, indent=4))
+
+        pagination = result['pagination']
+
+        self.assertEqual(pagination['has_next'], True)
+        self.assertEqual(pagination['has_previous'], True)
+        self.assertEqual(pagination['page'], 2)
+
 if __name__ == '__main__':
     unittest.main()

@@ -8,14 +8,13 @@ from flow_builder import FlowBuilder
 
 builder = FlowBuilder()
 
-
 @route(constants.PREFIX + '/popular')
-def HandlePopular():
-    oc = ObjectContainer(title2=unicode(L('Channels')))
+def HandlePopular(page=1):
+    oc = ObjectContainer(title2=unicode(L('Popular Movies')))
 
-    items = service.get_movies("/film/?s=3")
+    response = service.get_popular_movies(page=page)
 
-    for item in items:
+    for item in response['movies']:
         name = item['name']
         path = item['path']
         thumb = item['thumb']
@@ -25,6 +24,8 @@ def HandlePopular():
             title=util.sanitize(name),
             thumb=thumb
         ))
+
+    pagination.append_controls(oc, response, page=int(page), callback=HandlePopular)
 
     return oc
 
