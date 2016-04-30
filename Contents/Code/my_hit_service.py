@@ -72,9 +72,11 @@ class MyHitService(HttpService):
         return script[index1 + 6:index2] + ".f4m"
 
     def get_metadata(self, url):
-        buffer = self.http_request(url).read()
+        bandwidth = url[url.find("chunklist_b")+11:url.find(".m3u8")]
 
-        document = self.to_document(buffer)
+        source_url = self.get_base_url(url) + "/manifest.f4m"
+
+        document = self.fetch_document(source_url)
 
         data = []
 
@@ -82,13 +84,19 @@ class MyHitService(HttpService):
 
         for media in media_block:
             data.append({
-                'width': media.get('width'),
-                'height': media.get('height'),
-                'bitrate': media.get('bitrate') + "000",
+                'width': int(media.get('width')),
+                'height':int(media.get('height')),
+                'bitrate': int(media.get('bitrate')) * 1000,
                 'url': media.get('url')
             })
 
-        return data
+        location = -1
+        for index2, item in enumerate(data):
+            if item['url'].find(bandwidth) >= 0:
+                location = index2
+                break
+
+        return data[location]
 
     def get_urls(self, path):
         url = self.get_source_url(path)
@@ -97,7 +105,7 @@ class MyHitService(HttpService):
 
         urls = self.get_play_list_urls(new_url)
 
-        return reversed(urls)
+        return urls
 
     def extract_pagination_data(self, path, page):
         page = int(page)

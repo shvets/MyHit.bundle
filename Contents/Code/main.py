@@ -113,20 +113,8 @@ def MetadataObjectForURL(path, name, thumb, urls):
 def MediaObjectsForURL(urls):
     items = []
 
-    for index, url in enumerate(urls):
-        bandwidth = url[url.find("chunklist_b")+11:url.find(".m3u8")]
-
-        data = service.get_metadata(service.get_base_url(url) + "/manifest.f4m")
-
-        location = -1
-        for index2, item in enumerate(data):
-            if item['url'].find(bandwidth) >= 0:
-                location = index2
-                break
-
-        metadata = data[location]
-
-        Log(metadata)
+    for index, url in enumerate(reversed(urls)):
+        metadata = service.get_metadata(url)
 
         play_callback = Callback(PlayVideo, url=url)
 
@@ -134,7 +122,7 @@ def MediaObjectsForURL(urls):
                                                   width=metadata['width'],
                                                   height=metadata['height'],
                                                   video_resolution=metadata['height'],
-                                                  bitrate=int(metadata['bitrate']))
+                                                  bitrate=metadata['bitrate'])
 
         items.append(media_object)
 
