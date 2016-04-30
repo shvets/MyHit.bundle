@@ -8,8 +8,8 @@ from flow_builder import FlowBuilder
 
 builder = FlowBuilder()
 
-@route(constants.PREFIX + '/popular')
-def HandlePopular(page=1):
+@route(constants.PREFIX + '/popular_movies')
+def HandlePopularMovies(page=1):
     oc = ObjectContainer(title2=unicode(L('Popular Movies')))
 
     response = service.get_popular_movies(page=page)
@@ -25,7 +25,28 @@ def HandlePopular(page=1):
             thumb=thumb
         ))
 
-    pagination.append_controls(oc, response, page=int(page), callback=HandlePopular)
+    pagination.append_controls(oc, response, page=int(page), callback=HandlePopularMovies)
+
+    return oc
+
+@route(constants.PREFIX + '/popular_serials')
+def HandlePopularSerials(page=1):
+    oc = ObjectContainer(title2=unicode(L('Popular Serials')))
+
+    response = service.get_popular_serials(page=page)
+
+    for item in response['movies']:
+        name = item['name']
+        path = item['path']
+        thumb = item['thumb']
+
+        oc.add(DirectoryObject(
+            key=Callback(HandleMovie, path=path, name=name, thumb=thumb),
+            title=util.sanitize(name),
+            thumb=thumb
+        ))
+
+    pagination.append_controls(oc, response, page=int(page), callback=HandlePopularSerials)
 
     return oc
 
@@ -87,26 +108,24 @@ def MetadataObjectForURL(path, name, thumb, urls):
 
     video.key = Callback(HandleMovie, path=path, name=name, thumb=thumb, container=True)
 
-    video.items.extend(MediaObjectsForURL2(urls))
+    video.items.extend(MediaObjectsForURL(urls))
 
     return video
 
-def MediaObjectsForURL2(urls):
+def MediaObjectsForURL( urls):
     items = []
 
-    url = urls[0]
-    Log(url)
+    for url in urls:
+        Log(url)
 
-    #url = 'http://i543.hotcloud.org/vod/vod/d3/48/00000000000248d3_4_5_01.smil/manifest.f4m'
-    url = url.replace('.f4m', '.m3u8')
+        bandwidth = url[url.find("chunklist_b")+11:url.find(".m3u8")]
+        Log(bandwidth)
 
-    Log(url)
+        play_callback = Callback(PlayVideo, url=url)
 
-    play_callback = Callback(PlayVideo, url=url)
+        media_object = builder.build_media_object(play_callback, play_list=True, video_resolution=bandwidth)
 
-    media_object = builder.build_media_object(play_callback, play_list=True)
-
-    items.append(media_object)
+        items.append(media_object)
 
     return items
 
@@ -194,16 +213,15 @@ def PlayVideo(url, play_list=True):
 
 @route(constants.PREFIX + '/play_list.m3u8')
 def PlayList(url):
-    # return service.get_play_list(url)
-
-    Log(url)
-
-    urls = service.get_play_list_urls(url)
-
-    Log(urls)
-
-    play_list = service.get_play_list2(url, urls[1])
-
-    Log(play_list)
+    play_list = service.get_play_list2(url)
 
     return play_list
+
+# @route(constants.PREFIX + '/play_list3')
+# def PlayList3(url):
+#     urls = service.get_play_list_urls3(url)
+#
+#     Log(urls)
+#     #
+#     return service.http_request(urls[0]).read()
+#     #return urls[1]

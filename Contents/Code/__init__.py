@@ -36,7 +36,8 @@ def MainMenu():
     # oc.add(DirectoryObject(key=Callback(main.HandleNewSeries), title=unicode(L('New Series'))))
     # oc.add(DirectoryObject(key=Callback(main.HandlePopular), title=unicode(L('Popular'))))
     # oc.add(DirectoryObject(key=Callback(main.HandleCategories), title=unicode(L('Categories'))))
-    oc.add(DirectoryObject(key=Callback(main.HandlePopular), title=unicode(L('Popular Movies'))))
+    oc.add(DirectoryObject(key=Callback(main.HandlePopularMovies), title=unicode(L('Popular Movies'))))
+    oc.add(DirectoryObject(key=Callback(main.HandlePopularSerials), title=unicode(L('Popular Series'))))
     oc.add(DirectoryObject(key=Callback(main.HandleHistory), title=unicode(L('History'))))
     oc.add(DirectoryObject(key=Callback(main.HandleQueue), title=unicode(L('Queue'))))
 

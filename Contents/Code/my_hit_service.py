@@ -18,8 +18,23 @@ class MyHitService(HttpService):
 
         return new_path
 
+    def get_new_movies(self, page=1):
+        return self.get_movies("/film", page=page)
+
     def get_popular_movies(self, page=1):
         return self.get_movies("/film/?s=3", page=page)
+
+    def get_popular_serials(self, page=1):
+        return self.get_movies("/serial/?s=3", page=page)
+
+    def get_selection(self, page=1):
+        return self.get_movies("/selection/film", page=page)
+
+    def get_selected_movies(self, page=1):
+        return self.get_movies("/selection/film", page=page)
+
+    def get_selected_serials(self, page=1):
+        return self.get_movies("/selection/serial", page=page)
 
     def get_movies(self, path, page=1):
         list = []
@@ -56,7 +71,9 @@ class MyHitService(HttpService):
 
         url = script[index1+6:index2] + ".f4m"
 
-        return [url]
+        base_url = url.replace('.f4m', '.m3u8')
+
+        return self.get_play_list_urls(base_url)
 
     def extract_pagination_data(self, path, page):
         page = int(page)
@@ -86,20 +103,9 @@ class MyHitService(HttpService):
 
         return response
 
-    def get_play_list_urls(self, url):
-        play_list = self.get_play_list(url)
+    def get_play_list2(self, url):
+        base_url = self.get_base_url(url)
 
-        lines = play_list.splitlines()
-
-        urls = []
-
-        for line in lines:
-            if line[:1] != '#':
-                urls.append(line)
-
-        return urls
-
-    def get_play_list2(self, base_url, url):
         lines = self.http_request(url).read().splitlines()
 
         new_lines = []
@@ -108,6 +114,25 @@ class MyHitService(HttpService):
             if line[:1] == '#':
                 new_lines.append(line)
             else:
-                new_lines.append(base_url[:len(base_url) - len('manifest.m3u8') - 1] + '/' + line)
+                new_lines.append(base_url + '/' + line)
 
         return "\n".join(new_lines)
+
+    def get_play_list_urls3(self, url):
+        base_url = url[:len(url) - len('manifest.f4m')]
+
+        buffer = self.http_request(url).read()
+
+        document = self.to_document(buffer)
+
+        urls = []
+
+        media_block = document.xpath("//manifest/media")
+
+        for media in media_block:
+            # width="428" height="240" bitrate="488" url="
+            urls.append(base_url + media.get('url'))
+
+        return urls
+
+

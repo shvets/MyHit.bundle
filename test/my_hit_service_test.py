@@ -12,39 +12,57 @@ class MyHitServiceTest(unittest.TestCase):
         self.service = MyHitService()
 
     def test_get_get_popular__movies(self):
-        result = self.service.get_movies("/film/?s=3")
+        result = self.service.get_popular_movies()
 
         print(json.dumps(result, indent=4))
 
     def test_get_get_urls(self):
-        movies = self.service.get_movies("/film/?s=3")
+        movies = self.service.get_popular_movies()['movies']
 
         movie = movies[0]
 
-        print movie
+        print(json.dumps(movie, indent=4))
 
         result = self.service.get_urls(movie['path'])
 
         print(json.dumps(result, indent=4))
 
-    def test_get_play_list(self):
-        # new_series = self.service.get_new_series()
-        #
-        # path = new_series[0]['path']
+    def test_get_play_list2(self):
+        movies = self.service.get_popular_movies()['movies']
 
-        # urls = self.service.retrieve_urls(path)
+        movie = movies[0]
 
-        url = 'http://i543.hotcloud.org/vod/vod/d3/48/00000000000248d3_4_5_01.smil/manifest.f4m'
+        urls = self.service.get_urls(movie['path'])
 
-        base_url = url.replace('.f4m', '.m3u8')
+        # urls2 = self.service.get_play_list_urls(urls[0])
 
-        urls = self.service.get_play_list_urls(base_url)
+        print(json.dumps(urls, indent=4))
 
-        # print(json.dumps(urls, indent=4))
+        url = urls[0]
 
-        play_list = self.service.get_play_list2(base_url, urls[0])
+        play_list = self.service.get_play_list2(url)
 
         print play_list
+
+    def test_get_play_list3(self):
+        movies = self.service.get_popular_movies()['movies']
+
+        movie = movies[0]
+
+        urls = self.service.get_urls(movie['path'])
+
+        print urls
+
+        urls = self.service.get_play_list_urls3(urls[0])
+
+        print(json.dumps(urls, indent=4))
+
+        print self.service.http_request(urls[0]).read()
+
+        # play_list = self.service.get_play_list3(urls[0])
+        #
+        # print play_list
+
 
     def test_pagination_in_popular_movies(self):
         result = self.service.get_popular_movies(page=1)

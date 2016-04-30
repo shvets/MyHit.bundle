@@ -1,14 +1,11 @@
 {
-  "Title": "HD Сериалы",
+  "Title": "MyHit",
   "Queue": "Очередь",
   "History": "История",
   "Search": "Поиск",
   "Search on MyHit.org": "Искать на MyHit.org",
-  "New Series": "Новые Серии",
-  "Popular": "Популярное",
-  "Categories": "Категории",
-  "All": "Все",
-  "episode": "серия",
+  "Popular Movies": "Популярные Фильмы",
+  "Popular Series": "Популярные Сериалы",
 
   "Add Bookmark": "Добавить в очередь",
   "Remove Bookmark": "Удалить из очереди"
