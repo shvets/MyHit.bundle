@@ -18,23 +18,23 @@ class MyHitService(HttpService):
 
         return new_path
 
-    def get_new_movies(self, page=1):
-        return self.get_movies("/film", page=page)
+    def get_all_movies(self, page=1):
+        return self.get_movies("/film/", page=page)
+
+    def get_all_serials(self, page=1):
+        return self.get_serials("/serial/", page=page)
 
     def get_popular_movies(self, page=1):
         return self.get_movies("/film/?s=3", page=page)
 
     def get_popular_serials(self, page=1):
-        return self.get_movies("/serial/?s=3", page=page)
+        return self.get_serials("/serial/?s=3", page=page)
 
-    def get_selection(self, page=1):
-        return self.get_movies("/selection/film", page=page)
-
-    def get_selected_movies(self, page=1):
-        return self.get_movies("/selection/film", page=page)
-
-    def get_selected_serials(self, page=1):
-        return self.get_movies("/selection/serial", page=page)
+    # def get_selected_movies(self, page=1):
+    #     return self.get_movies("/selection/film", page=page)
+    #
+    # def get_selected_serials(self, page=1):
+    #     return self.get_movies("/selection/serial", page=page)
 
     def get_movies(self, path, page=1):
         list = []
@@ -52,6 +52,77 @@ class MyHitService(HttpService):
             name = link.get("title")
             name = name[:len(name)-18]
             thumb = self.URL + link.xpath('div/img/@src')[0]
+
+            list.append({'path': href, 'thumb': thumb, 'name': name})
+
+        pagination = self.extract_pagination_data(page_path, page=page)
+
+        return {"movies": list, "pagination": pagination["pagination"]}
+
+    def get_serials(self, path, page=1):
+        list = []
+
+        page_path = self.get_page_path(path, page)
+
+        document = self.fetch_document(self.URL + page_path)
+
+        items = document.xpath('//div[@class="serial-list"]/div[@class="row"]')
+
+        for item in items:
+            link = item.xpath('div/a')[0]
+
+            href = link.xpath('@href')[0]
+            name = link.get("title")
+            name = name[:len(name) - 18]
+            thumb = self.URL + link.xpath('div/img/@src')[0]
+
+            list.append({'path': href, 'thumb': thumb, 'name': name})
+
+        pagination = self.extract_pagination_data(page_path, page=page)
+
+        return {"movies": list, "pagination": pagination["pagination"]}
+
+    def get_soundtracks(self, page=1):
+        list = []
+
+        page_path = self.get_page_path("/soundtrack/", page)
+
+        document = self.fetch_document(self.URL + page_path)
+
+        items = document.xpath('//div[@class="soundtrack-list"]/div[@class="row"]/div')
+
+        for item in items:
+            link1 = item.xpath('div/b/a')[0]
+            link2 = item.xpath('a')[0]
+
+            href = link1.xpath('@href')[0]
+            name = link1.text_content()
+
+            thumb = self.URL + link2.xpath('img/@src')[0]
+
+            list.append({'path': href, 'thumb': thumb, 'name': name})
+
+        pagination = self.extract_pagination_data(page_path, page=page)
+
+        return {"movies": list, "pagination": pagination["pagination"]}
+
+    def get_selections(self, page=1):
+        list = []
+
+        page_path = self.get_page_path("/selection/", page)
+
+        document = self.fetch_document(self.URL + page_path)
+
+        items = document.xpath('//div[@class="selection-list"]/div[@class="row"]/div')
+
+        for item in items:
+            link1 = item.xpath('div/b/a')[0]
+            link2 = item.xpath('a')[0]
+
+            href = link1.xpath('@href')[0]
+            name = link1.text_content()
+
+            thumb = self.URL + link2.xpath('img/@src')[0]
 
             list.append({'path': href, 'thumb': thumb, 'name': name})
 

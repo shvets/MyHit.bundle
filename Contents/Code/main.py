@@ -8,6 +8,27 @@ from flow_builder import FlowBuilder
 
 builder = FlowBuilder()
 
+@route(constants.PREFIX + '/movies')
+def HandleMovies(page=1):
+    oc = ObjectContainer(title2=unicode(L('Movies')))
+
+    response = service.get_all_movies(page=page)
+
+    for item in response['movies']:
+        name = item['name']
+        path = item['path']
+        thumb = item['thumb']
+
+        oc.add(DirectoryObject(
+            key=Callback(HandleMovie, path=path, name=name, thumb=thumb),
+            title=util.sanitize(name),
+            thumb=thumb
+        ))
+
+    pagination.append_controls(oc, response, page=int(page), callback=HandleMovies)
+
+    return oc
+
 @route(constants.PREFIX + '/popular_movies')
 def HandlePopularMovies(page=1):
     oc = ObjectContainer(title2=unicode(L('Popular Movies')))
@@ -29,27 +50,6 @@ def HandlePopularMovies(page=1):
 
     return oc
 
-@route(constants.PREFIX + '/popular_serials')
-def HandlePopularSerials(page=1):
-    oc = ObjectContainer(title2=unicode(L('Popular Serials')))
-
-    response = service.get_popular_serials(page=page)
-
-    for item in response['movies']:
-        name = item['name']
-        path = item['path']
-        thumb = item['thumb']
-
-        oc.add(DirectoryObject(
-            key=Callback(HandleMovie, path=path, name=name, thumb=thumb),
-            title=util.sanitize(name),
-            thumb=thumb
-        ))
-
-    pagination.append_controls(oc, response, page=int(page), callback=HandlePopularSerials)
-
-    return oc
-
 @route(constants.PREFIX + '/movie')
 def HandleMovie(path, name, thumb, container=False):
     oc = ObjectContainer(title2=unicode(L(name)))
@@ -67,6 +67,110 @@ def HandleMovie(path, name, thumb, container=False):
     #     history.push_to_history(path=path, title=title, name=name, thumb=thumb, season=season, episode=episode)
     #     service.queue.append_controls(oc, HandleMovie, path=path, title=title, name=name, thumb=thumb, season=season,
     #                                   episode=episode)
+
+    return oc
+
+@route(constants.PREFIX + '/all_serials')
+def HandleSerials(page=1):
+    oc = ObjectContainer(title2=unicode(L('Serials')))
+
+    response = service.get_all_serials(page=page)
+
+    for item in response['movies']:
+        name = item['name']
+        path = item['path']
+        thumb = item['thumb']
+
+        oc.add(DirectoryObject(
+            key=Callback(HandleSerial, path=path, name=name, thumb=thumb),
+            title=util.sanitize(name),
+            thumb=thumb
+        ))
+
+    pagination.append_controls(oc, response, page=int(page), callback=HandleSerials)
+
+    return oc
+
+@route(constants.PREFIX + '/popular_serials')
+def HandlePopularSerials(page=1):
+    oc = ObjectContainer(title2=unicode(L('Popular Serials')))
+
+    response = service.get_popular_serials(page=page)
+
+    for item in response['movies']:
+        name = item['name']
+        path = item['path']
+        thumb = item['thumb']
+
+        oc.add(DirectoryObject(
+            key=Callback(HandleSerial, path=path, name=name, thumb=thumb),
+            title=util.sanitize(name),
+            thumb=thumb
+        ))
+
+    pagination.append_controls(oc, response, page=int(page), callback=HandlePopularSerials)
+
+    return oc
+
+@route(constants.PREFIX + '/serial')
+def HandleSerial(path, name, thumb, container=False):
+    oc = ObjectContainer(title2=unicode(L(name)))
+
+    urls = service.get_urls(path)
+
+    # if operation == 'add':
+    #     service.queue.add_bookmark(path=path, title=title, name=name, thumb=thumb, season=season, episode=episode)
+    # elif operation == 'remove':
+    #     service.queue.remove_bookmark(path=path, title=title, name=name, thumb=thumb, season=season, episode=episode)
+
+    oc.add(MetadataObjectForURL(path=path, name=name, thumb=thumb, urls=urls))
+
+    # if str(container) == 'False':
+    #     history.push_to_history(path=path, title=title, name=name, thumb=thumb, season=season, episode=episode)
+    #     service.queue.append_controls(oc, HandleMovie, path=path, title=title, name=name, thumb=thumb, season=season,
+    #                                   episode=episode)
+
+    return oc
+
+@route(constants.PREFIX + '/soundtracks')
+def HandleSoundtracks(page=1):
+    oc = ObjectContainer(title2=unicode(L('Soundtracks')))
+
+    response = service.get_soundtracks(page=page)
+
+    for item in response['movies']:
+        name = item['name']
+        path = item['path']
+        thumb = item['thumb']
+
+        oc.add(DirectoryObject(
+            key=Callback(HandleMovie, path=path, name=name, thumb=thumb),
+            title=util.sanitize(name),
+            thumb=thumb
+        ))
+
+    pagination.append_controls(oc, response, page=int(page), callback=HandleSoundtracks)
+
+    return oc
+
+@route(constants.PREFIX + '/selections')
+def HandleSelections(page=1):
+    oc = ObjectContainer(title2=unicode(L('Selections')))
+
+    response = service.get_selections(page=page)
+
+    for item in response['movies']:
+        name = item['name']
+        path = item['path']
+        thumb = item['thumb']
+
+        oc.add(DirectoryObject(
+            key=Callback(HandleMovie, path=path, name=name, thumb=thumb),
+            title=util.sanitize(name),
+            thumb=thumb
+        ))
+
+    pagination.append_controls(oc, response, page=int(page), callback=HandleSelections)
 
     return oc
 
