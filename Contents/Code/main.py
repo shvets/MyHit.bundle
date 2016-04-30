@@ -56,8 +56,6 @@ def HandleMovie(path, name, thumb, container=False):
 
     urls = service.get_urls(path)
 
-    Log(urls)
-
     # if operation == 'add':
     #     service.queue.add_bookmark(path=path, title=title, name=name, thumb=thumb, season=season, episode=episode)
     # elif operation == 'remove':
@@ -112,18 +110,31 @@ def MetadataObjectForURL(path, name, thumb, urls):
 
     return video
 
-def MediaObjectsForURL( urls):
+def MediaObjectsForURL(urls):
     items = []
 
-    for url in urls:
-        Log(url)
-
+    for index, url in enumerate(urls):
         bandwidth = url[url.find("chunklist_b")+11:url.find(".m3u8")]
-        Log(bandwidth)
+
+        data = service.get_metadata(service.get_base_url(url) + "/manifest.f4m")
+
+        location = -1
+        for index2, item in enumerate(data):
+            if item['url'].find(bandwidth) >= 0:
+                location = index2
+                break
+
+        metadata = data[location]
+
+        Log(metadata)
 
         play_callback = Callback(PlayVideo, url=url)
 
-        media_object = builder.build_media_object(play_callback, play_list=True, video_resolution=bandwidth)
+        media_object = builder.build_media_object(play_callback, play_list=True,
+                                                  width=metadata['width'],
+                                                  height=metadata['height'],
+                                                  video_resolution=metadata['height'],
+                                                  bitrate=int(metadata['bitrate']))
 
         items.append(media_object)
 
@@ -213,15 +224,6 @@ def PlayVideo(url, play_list=True):
 
 @route(constants.PREFIX + '/play_list.m3u8')
 def PlayList(url):
-    play_list = service.get_play_list2(url)
+    play_list = service.get_play_list(url)
 
     return play_list
-
-# @route(constants.PREFIX + '/play_list3')
-# def PlayList3(url):
-#     urls = service.get_play_list_urls3(url)
-#
-#     Log(urls)
-#     #
-#     return service.http_request(urls[0]).read()
-#     #return urls[1]

@@ -59,7 +59,7 @@ class MyHitService(HttpService):
 
         return {"movies": list, "pagination": pagination["pagination"]}
 
-    def get_urls(self, path):
+    def get_source_url(self, path):
         content = self.fetch_content(self.URL + path)
 
         document = self.to_document(content)
@@ -69,11 +69,35 @@ class MyHitService(HttpService):
         index1 = script.find("file:")
         index2 = script.find(".f4m")
 
-        url = script[index1+6:index2] + ".f4m"
+        return script[index1 + 6:index2] + ".f4m"
 
-        base_url = url.replace('.f4m', '.m3u8')
+    def get_metadata(self, url):
+        buffer = self.http_request(url).read()
 
-        return self.get_play_list_urls(base_url)
+        document = self.to_document(buffer)
+
+        data = []
+
+        media_block = document.xpath("//manifest/media")
+
+        for media in media_block:
+            data.append({
+                'width': media.get('width'),
+                'height': media.get('height'),
+                'bitrate': media.get('bitrate') + "000",
+                'url': media.get('url')
+            })
+
+        return data
+
+    def get_urls(self, path):
+        url = self.get_source_url(path)
+
+        new_url = url.replace('.f4m', '.m3u8')
+
+        urls = self.get_play_list_urls(new_url)
+
+        return reversed(urls)
 
     def extract_pagination_data(self, path, page):
         page = int(page)
@@ -102,21 +126,6 @@ class MyHitService(HttpService):
         }
 
         return response
-
-    def get_play_list2(self, url):
-        base_url = self.get_base_url(url)
-
-        lines = self.http_request(url).read().splitlines()
-
-        new_lines = []
-
-        for line in lines:
-            if line[:1] == '#':
-                new_lines.append(line)
-            else:
-                new_lines.append(base_url + '/' + line)
-
-        return "\n".join(new_lines)
 
     def get_play_list_urls3(self, url):
         base_url = url[:len(url) - len('manifest.f4m')]
