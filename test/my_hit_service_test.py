@@ -41,6 +41,16 @@ class MyHitServiceTest(unittest.TestCase):
 
         print(json.dumps(result, indent=4))
 
+    def test_get_selection(self):
+        selections = self.service.get_selections()['movies']
+
+        selection = selections[0]
+        print(json.dumps(selection, indent=4))
+
+        result = self.service.get_selection(id=selection['id'])
+
+        print(json.dumps(result, indent=4))
+
     def test_get_get_urls(self):
         movies = self.service.get_popular_movies()['movies']
 

@@ -161,6 +161,30 @@ def HandleSelections(page=1):
 
     for item in response['movies']:
         name = item['name']
+        id = item['id']
+        thumb = item['thumb']
+
+        if name != "Актёры и актрисы":
+            oc.add(DirectoryObject(
+                key=Callback(HandleSelection, id=id, name=name),
+                title=util.sanitize(name),
+                thumb=thumb
+            ))
+
+    pagination.append_controls(oc, response, page=int(page), callback=HandleSelections)
+
+    return oc
+
+@route(constants.PREFIX + '/selection')
+def HandleSelection(id, name, page=1):
+    oc = ObjectContainer(title2=unicode(name))
+
+    Log(id)
+
+    response = service.get_selection(id, page=page)
+
+    for item in response['movies']:
+        name = item['name']
         path = item['path']
         thumb = item['thumb']
 
@@ -170,7 +194,7 @@ def HandleSelections(page=1):
             thumb=thumb
         ))
 
-    pagination.append_controls(oc, response, page=int(page), callback=HandleSelections)
+    pagination.append_controls(oc, response, page=int(page), callback=HandleSelection)
 
     return oc
 

@@ -122,7 +122,34 @@ class MyHitService(HttpService):
             href = link1.xpath('@href')[0]
             name = link1.text_content()
 
+            id = href[2:len(href) - 1]
+
             thumb = self.URL + link2.xpath('img/@src')[0]
+
+            list.append({'id': id, 'thumb': thumb, 'name': name})
+
+        pagination = self.extract_pagination_data(page_path, page=page)
+
+        return {"movies": list, "pagination": pagination["pagination"]}
+
+    def get_selection(self, id, page=1):
+        list = []
+
+        page_path = self.get_page_path("/selection/" + id + '/', page)
+
+        document = self.fetch_document(self.URL + page_path)
+
+        items = document.xpath('//div[@class="selection-view"]/div')
+
+        for item in items:
+            link = item.xpath('div/a')[0]
+
+            href = link.xpath('@href')[0]
+            name = link.get("title")
+
+            name = name[:len(name) - 18]
+
+            thumb = self.URL + link.xpath('div/img/@src')[0]
 
             list.append({'path': href, 'thumb': thumb, 'name': name})
 
