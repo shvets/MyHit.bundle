@@ -144,12 +144,33 @@ def HandleSoundtracks(page=1):
         thumb = item['thumb']
 
         oc.add(DirectoryObject(
-            key=Callback(HandleMovie, path=path, name=name, thumb=thumb),
+            key=Callback(HandleSoundtrack, path=path, name=name, thumb=thumb),
             title=util.sanitize(name),
             thumb=thumb
         ))
 
     pagination.append_controls(oc, response, page=int(page), callback=HandleSoundtracks)
+
+    return oc
+
+@route(constants.PREFIX + '/soundtrack')
+def HandleSoundtrack(path, name, thumb, container=False):
+    oc = ObjectContainer(title2=unicode(L('Soundtracks')))
+
+    albums = service.get_albums(path)
+
+    Log(albums)
+
+    for item in albums:
+        album = item[0]['album']
+        track = item[0]['track']
+        url = item[0]['url']
+
+        oc.add(DirectoryObject(
+            key=Callback(GetAudioTrack, title='title', thumb='thumb', artist='artist', format='format', url=url, container=True),
+            title=util.sanitize(name),
+            thumb=thumb
+        ))
 
     return oc
 
@@ -178,8 +199,6 @@ def HandleSelections(page=1):
 @route(constants.PREFIX + '/selection')
 def HandleSelection(id, name, page=1):
     oc = ObjectContainer(title2=unicode(name))
-
-    Log(id)
 
     response = service.get_selection(id, page=page)
 
@@ -343,3 +362,64 @@ def PlayList(url):
     play_list = service.get_play_list(url)
 
     return play_list
+
+
+@route(constants.PREFIX + '/audio_track')
+def GetAudioTrack(title, thumb, artist, format, url, container=False, **params):
+    track = MetadataObjectForURL2(title=title, thumb=thumb, artist=artist, format=format, url=url, container=container)
+
+    if container:
+        oc = ObjectContainer(title2=unicode(title))
+
+        oc.add(track)
+
+        return oc
+    else:
+        return track
+
+def MetadataObjectForURL2(title, thumb, artist, format, url, container):
+    track = TrackObject(
+        key=Callback(GetAudioTrack, title=title, thumb=thumb, format=format, artist=artist, url=url, container=True),
+        rating_key = unicode(title),
+        title = unicode(title),
+        # album = 'album',
+        thumb=thumb,
+        artist = artist
+    )
+
+    track.items = MediaObjectsForURL2(url, format)
+
+    return track
+
+def MediaObjectsForURL2(url, format):
+    if 'm4a' in format:
+        container = Container.MP4
+        audio_codec = AudioCodec.AAC
+    else:
+        container = Container.MP3
+        audio_codec = AudioCodec.MP3
+
+    media_objects = []
+
+    media_object = MediaObject(
+        container = container,
+        optimized_for_streaming=True
+    )
+
+    part_object = PartObject(key=Callback(PlayMusic, url=url))
+
+    audio_stream = AudioStreamObject(codec=audio_codec, channels=2, bitrate=str(128))
+
+    part_object.streams = [audio_stream]
+
+    media_object.parts.append(part_object)
+
+    media_objects.append(media_object)
+
+    return media_objects
+
+@route('/music/music/play_audio')
+def PlayMusic(url):
+    Log(url)
+
+    return Redirect(url)

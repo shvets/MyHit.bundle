@@ -36,6 +36,13 @@ class MyHitServiceTest(unittest.TestCase):
 
         print(json.dumps(result, indent=4))
 
+    def test_get_albums(self):
+        result = self.service.get_soundtracks()['movies']
+
+        albums = self.service.get_albums(result[0]['path'])
+
+        print(json.dumps(albums, indent=4))
+
     def test_get_selections(self):
         result = self.service.get_selections()
 

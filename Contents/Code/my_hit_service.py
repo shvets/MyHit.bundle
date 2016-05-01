@@ -106,6 +106,31 @@ class MyHitService(HttpService):
 
         return {"movies": list, "pagination": pagination["pagination"]}
 
+    def get_albums(self, path, page=1):
+        list = []
+
+        page_path = self.get_page_path(path, page)
+
+        document = self.fetch_document(self.URL + page_path)
+
+        albums = document.xpath('//*[@id="soundtrack_modify_table"]')
+
+        for album in albums:
+            tracks = album.xpath('tbody/tr/td/div[contains(@class, "jp-audio")]')
+
+            al = []
+
+            for track in tracks:
+                al.append({
+                  "album": track.get("data-album-num"),
+                  "track": track.get("data-track-num"),
+                  "url": self.URL + track.get("data-file-url")
+                })
+
+            list.append(al)
+
+        return list
+
     def get_selections(self, page=1):
         list = []
 
