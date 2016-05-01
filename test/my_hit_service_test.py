@@ -88,7 +88,6 @@ class MyHitServiceTest(unittest.TestCase):
         #
         # print play_list
 
-
     def test_pagination_in_popular_movies(self):
         result = self.service.get_popular_movies(page=1)
 
@@ -102,7 +101,7 @@ class MyHitServiceTest(unittest.TestCase):
 
         result = self.service.get_popular_movies(page=2)
 
-        # print(json.dumps(result, indent=4))
+        #print(json.dumps(result, indent=4))
 
         pagination = result['pagination']
 

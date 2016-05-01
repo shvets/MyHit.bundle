@@ -14,7 +14,7 @@ class MyHitService(HttpService):
         if page == 1:
             new_path = path
         else:
-            new_path = path + "&p=" + str(page)
+            new_path = self.build_url(path, p=str(page))
 
         return new_path
 
@@ -187,15 +187,22 @@ class MyHitService(HttpService):
 
         response = {}
 
-        pagination_root = document.xpath('//div/ul[@class="pagination"]')
+        pagination_root = document.xpath('//div[@class="container"]/div[@class="row"]/div/div[@class="row"]')
 
         if pagination_root:
-            pagination_block = pagination_root[0]
+            pagination_block = pagination_root[1]
 
-            item_blocks = pagination_block.xpath('li')
+            text = pagination_block[0].text_content()
 
-            if item_blocks:
-                pages = int(len(item_blocks)-2)
+            pos1 = text.find(":")
+            pos2 = text.find("(")
+
+            items = int(text[pos1+1:pos2])
+
+            pages = items / 24
+
+            if items % 24 > 0:
+                pages = pages +1
 
         response["pagination"] = {
             "page": page,
@@ -218,7 +225,6 @@ class MyHitService(HttpService):
         media_block = document.xpath("//manifest/media")
 
         for media in media_block:
-            # width="428" height="240" bitrate="488" url="
             urls.append(base_url + media.get('url'))
 
         return urls
