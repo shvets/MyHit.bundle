@@ -1,23 +1,25 @@
 class FlowBuilder():
-    def build_media_object(self, play_callback, **params):
+    def build_media_object(self, play_callback, config):
+        if config is None:
+            config = {}
         audio_stream = AudioStreamObject()
 
         audio_stream.channels = 2
 
-        if 'audio_codec' in params.keys():
-            audio_stream.codec = params['audio_codec']
+        if 'audio_codec' in config.keys():
+            audio_stream.codec = config['audio_codec']
         else:
             audio_stream.codec = AudioCodec.AAC
 
-        if 'bitrate' in params.keys():
-            audio_stream.bitrate = params['bitrate']
+        if 'bitrate' in config.keys():
+            audio_stream.bitrate = config['bitrate']
 
         video_stream = VideoStreamObject()
 
-        if 'video_codec' in params.keys():
-            video_stream.codec = params['video_codec']
-        else:
-            video_stream.codec = VideoCodec.H264
+        if 'video_codec' in config.keys():
+            video_stream.codec = config['video_codec']
+        # else:
+        #     video_stream.codec = VideoCodec.H264
 
         part_object = PartObject(
             key=play_callback,
@@ -26,26 +28,29 @@ class FlowBuilder():
 
         media_object = MediaObject()
 
-        media_object.optimized_for_streaming = True
-
-        if 'protocol' in params.keys():
-            media_object.protocol = params['protocol']
+        if 'optimized_for_streaming' in config.keys():
+            media_object.protocol = config['optimized_for_streaming']
         else:
-            media_object.protocol = Protocol.HLS
+            media_object.optimized_for_streaming = True
 
-        if 'container' in params.keys():
-            media_object.container = params['container']
-        else:
-            media_object.container = Container.MPEGTS
+        if 'protocol' in config.keys():
+            media_object.protocol = config['protocol']
+        # else:
+        #     media_object.protocol = Protocol.HLS
 
-        if 'video_resolution' in params.keys():
-            media_object.video_resolution = params['video_resolution']
+        if 'container' in config.keys():
+            media_object.container = config['container']
+        # else:
+        #     media_object.container = Container.MPEGTS
 
-        if 'width' in params.keys():
-            media_object.video_resolution = params['width']
+        if 'video_resolution' in config.keys():
+            media_object.video_resolution = config['video_resolution']
 
-        if 'height' in params.keys():
-            media_object.video_resolution = params['height']
+        if 'width' in config.keys():
+            media_object.video_resolution = config['width']
+
+        if 'height' in config.keys():
+            media_object.video_resolution = config['height']
 
         media_object.parts = [part_object]
 
@@ -60,6 +65,9 @@ class FlowBuilder():
 
         elif media_type == 'movie':
             video = MovieObject(**params)
+
+        elif media_type == 'track':
+            video = TrackObject(**params)
 
         else:
             video = VideoClipObject(**params)
