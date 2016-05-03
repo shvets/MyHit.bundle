@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import json
 import constants
 import util
 import pagination
@@ -144,7 +145,7 @@ def HandleSoundtracks(page=1):
         thumb = item['thumb']
 
         oc.add(DirectoryObject(
-            key=Callback(HandleSoundtrack, path=path, name=name, thumb=thumb),
+            key=Callback(HandleSoundtrack, path=path, name=name),
             title=util.sanitize(name),
             thumb=thumb
         ))
@@ -154,21 +155,49 @@ def HandleSoundtracks(page=1):
     return oc
 
 @route(constants.PREFIX + '/soundtrack')
-def HandleSoundtrack(path, name, thumb, container=False):
-    oc = ObjectContainer(title2=unicode(L('Soundtracks')))
-
+def HandleSoundtrack(path, name):
     albums = service.get_albums(path)
 
     Log(albums)
 
-    for item in albums:
-        album = item[0]['album']
-        track = item[0]['track']
-        url = item[0]['url']
+    if len(albums) > 1:
+        oc = ObjectContainer(title2=unicode(name))
+
+        for index, album in enumerate(albums):
+            name = album['name'] + " (album " + str(index+1) + ")"
+            thumb = album['thumb']
+            artist = album['composer']
+            tracks = album['tracks']
+
+            oc.add(DirectoryObject(
+                key=Callback(HandleAlbum, name=name, thumb=thumb, artist=artist, tracks=json.dumps(tracks)),
+                title=util.sanitize(name),
+                thumb=thumb
+            ))
+
+        return oc
+    else:
+        album = albums[0]
+
+        return HandleAlbum(name=album['name'], thumb=album['thumb'], tracks=json.dumps(album['tracks']))
+
+@route(constants.PREFIX + '/album')
+def HandleAlbum(name, thumb, artist, tracks, container=False):
+    oc = ObjectContainer(title2=unicode(name))
+
+    # tracks = album['tracks']
+
+    for track in json.loads(tracks):
+        url = track['url']
+        name = track['name']
+        format = "mp3"
+        bitrate = track['bitrate']
+        duration = track['duration']
 
         oc.add(DirectoryObject(
-            key=Callback(GetAudioTrack, title='title', thumb='thumb', artist='artist', format='format', url=url, container=True),
-            title=util.sanitize(name),
+            key=Callback(GetAudioTrack, title=name, thumb='thumb', artist=artist, format=format,
+                            bitrate=bitrate, duration=duration, url=url, container=container),
+            title=name,
             thumb=thumb
         ))
 
@@ -238,7 +267,7 @@ def MetadataObjectForURL(path, name, thumb, urls):
     #     # video.tagline = 'tagline'
     #     # video.original_title = 'original_title'
 
-    video = builder.build_metadata_object(media_type='movie', **params)
+    video = builder.build_metadata_object(media_type='movie', name='', year=0)
 
     video.title = name
     video.rating_key = 'rating_key'
@@ -367,8 +396,9 @@ def PlayList(url):
     return play_list
 
 @route(constants.PREFIX + '/audio_track')
-def GetAudioTrack(title, thumb, artist, format, url, container=False, **params):
-    track = MetadataObjectForURL2(title=title, thumb=thumb, artist=artist, format=format, url=url, container=container)
+def GetAudioTrack(title, thumb, artist, format, bitrate, duration, url, container=False):
+    track = MetadataObjectForURL2(title=title, thumb=thumb, artist=artist, format=format, bitrate=bitrate,
+                                  duration=duration, url=url, container=container)
 
     if container:
         oc = ObjectContainer(title2=unicode(title))
@@ -379,10 +409,11 @@ def GetAudioTrack(title, thumb, artist, format, url, container=False, **params):
     else:
         return track
 
-def MetadataObjectForURL2(title, thumb, artist, format, url, container):
-    metadata_object = builder.build_metadata_object(media_type='track')
+def MetadataObjectForURL2(title, thumb, artist, format, bitrate, duration, url, container):
+    metadata_object = builder.build_metadata_object(media_type='track', name='', year=0)
 
-    metadata_object.key = Callback(GetAudioTrack, title=title, thumb=thumb, format=format, artist=artist, url=url, container=True)
+    metadata_object.key = Callback(GetAudioTrack, title=title, thumb=thumb, artist=artist, format=format,
+                                   bitrate=bitrate, duration=duration, url=url, container=False)
     metadata_object.rating_key = unicode(title)
     metadata_object.title = unicode(title)
     #metadata_object.album = 'album'
@@ -402,7 +433,8 @@ def MetadataObjectForURL2(title, thumb, artist, format, url, container):
             "config": {
                 "container": container,
                 "audio_codec": audio_codec,
-                "bitrate": "128"
+                "bitrate": bitrate,
+                "duration": duration,
             }
         }
     ]
@@ -429,4 +461,4 @@ def MediaObjectsForURL2(urls_items, player):
 @route(constants.PREFIX + '/play_audio')
 def PlayAudio(url):
     Log(url)
-    return Redirect(url + ".mp3")
+    return Redirect(url)

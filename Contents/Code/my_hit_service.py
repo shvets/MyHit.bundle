@@ -113,21 +113,46 @@ class MyHitService(HttpService):
 
         document = self.fetch_document(self.URL + page_path)
 
-        albums = document.xpath('//*[@id="soundtrack_modify_table"]')
+        root = document.xpath('//div[@class="container"]/div[@class="row"]/*/div[@class="row"]')
 
-        for album in albums:
-            tracks = album.xpath('tbody/tr/td/div[contains(@class, "jp-audio")]')
+        for index, item in enumerate(root):
+            if index % 2:
+                thumb = self.URL + item.find("div/a/img").get("src")
+                name = item.find("div/a").get("title")
 
-            al = []
+                composer = ''
+                for li in item.xpath("div")[1].xpath("ul/li"):
+                    if li.text_content().find('Композитор:'.decode("utf-8")) >= 0:
+                        composer = li.text_content()[len('Композитор:'.decode("utf-8")):len(li.text_content())-1]
 
-            for track in tracks:
-                al.append({
-                  "album": track.get("data-album-num"),
-                  "track": track.get("data-track-num"),
-                  "url": self.URL + track.get("data-file-url")
+                list.append({
+                    "thumb": thumb,
+                    "name": name,
+                    "composer": composer,
+                    "tracks": []
                 })
 
-            list.append(al)
+        items = document.xpath('//*[@id="soundtrack_modify_table"]')
+
+        for index, item in enumerate(items):
+            tracks = item.xpath('tbody/tr/td/div')
+
+            for track in tracks:
+                name = track.xpath('div[1]')[0].text_content()
+
+                duration = track.xpath('../following-sibling::td')[0].text_content()
+                bitrate = track.xpath('../following-sibling::td')[1].text_content()
+
+                list[index]['tracks'].append({
+                  # "album_number": int(track.get("data-album-num")),
+                  # "track_number": int(track.get("data-track-num")),
+                  "url": self.URL + track.get("data-file-url") + ".mp3",
+                  "name": name,
+                  "duration": duration,
+                  "bitrate": int(bitrate)
+                })
+            #
+            # list.append(album)
 
         return list
 
