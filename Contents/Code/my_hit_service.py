@@ -10,6 +10,9 @@ class MyHitService(HttpService):
 
         return document.xpath('//div[@class="container"]/div[@class="row"]')
 
+    def is_single_movie(self, path):
+        return True
+
     def get_page_path(self, path, page=1):
         if page == 1:
             new_path = path
@@ -144,15 +147,11 @@ class MyHitService(HttpService):
                 bitrate = track.xpath('../following-sibling::td')[1].text_content()
 
                 list[index]['tracks'].append({
-                  # "album_number": int(track.get("data-album-num")),
-                  # "track_number": int(track.get("data-track-num")),
                   "url": self.URL + track.get("data-file-url") + ".mp3",
                   "name": name,
                   "duration": duration,
                   "bitrate": int(bitrate)
                 })
-            #
-            # list.append(album)
 
         return list
 
@@ -206,6 +205,11 @@ class MyHitService(HttpService):
         pagination = self.extract_pagination_data(page_path, page=page)
 
         return {"movies": list, "pagination": pagination["pagination"]}
+
+    def search(self, query, page=1):
+        path = self.build_url("/search/", q=str(query), p=str(page))
+
+        return self.get_movies(path=path, page=page)
 
     def get_source_url(self, path):
         content = self.fetch_content(self.URL + path)

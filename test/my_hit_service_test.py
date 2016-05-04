@@ -105,6 +105,13 @@ class MyHitServiceTest(unittest.TestCase):
         self.assertEqual(pagination['has_previous'], True)
         self.assertEqual(pagination['page'], 2)
 
+    def test_search(self):
+        query = 'red'
+
+        result = self.service.search(query)
+
+        print(json.dumps(result, indent=4))
+
     def test_get_play_list3(self):
         movies = self.service.get_popular_movies()['movies']
 

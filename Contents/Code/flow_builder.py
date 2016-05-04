@@ -76,6 +76,8 @@ class FlowBuilder():
         elif media_type == 'track':
             metadata_object = TrackObject()
 
+            metadata_object.title = title
+
         else:
             metadata_object = VideoClipObject()
 

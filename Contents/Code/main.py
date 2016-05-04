@@ -63,7 +63,7 @@ def HandleMovie(path, name, thumb, container=False):
         metadata = service.get_metadata(url)
 
         urls_items.append({
-            "path": url,
+            "url": url,
             "config": {
                 "width": metadata['width'],
                 "height": metadata['height'],
@@ -77,7 +77,7 @@ def HandleMovie(path, name, thumb, container=False):
     # elif operation == 'remove':
     #     service.queue.remove_bookmark(path=path, title=title, name=name, thumb=thumb, season=season, episode=episode)
 
-    oc.add(MetadataObjectForURL(path=path, name=name, thumb=thumb, urls=urls_items, player=PlayVideo))
+    oc.add(MetadataObjectForURL(media_type="movie", path=path, name=name, thumb=thumb, url_items=urls_items, player=PlayVideo))
 
     # if str(container) == 'False':
     #     history.push_to_history(path=path, title=title, name=name, thumb=thumb, season=season, episode=episode)
@@ -86,8 +86,8 @@ def HandleMovie(path, name, thumb, container=False):
 
     return oc
 
-@route(constants.PREFIX + '/serials')
-def HandleSerials(page=1):
+@route(constants.PREFIX + '/seasons')
+def HandleSeasons(path, title, name, thumb, page=1):
     oc = ObjectContainer(title2=unicode(L('Serials')))
 
     response = service.get_all_serials(page=page)
@@ -103,7 +103,8 @@ def HandleSerials(page=1):
             thumb=thumb
         ))
 
-    pagination.append_controls(oc, response, page=int(page), callback=HandleSerials)
+    pagination.append_controls(oc, response, page=int(page), callback=HandleSeasons, path=path,
+                               title=title, name=name, thumb=thumb)
 
     return oc
 
@@ -188,9 +189,9 @@ def HandleAlbum(name, thumb, artist, tracks, container=False):
         duration = track['duration']
 
         oc.add(DirectoryObject(
-            key=Callback(GetAudioTrack, title=name, thumb='thumb', artist=artist, format=format,
-                            bitrate=bitrate, duration=duration, url=url, container=container),
-            title=name,
+            key=Callback(GetAudioTrack, path=url, name=name, artist=artist, format=format,
+                         bitrate=bitrate, duration=duration, container=container),
+            title=unicode(name),
             thumb=thumb
         ))
 
@@ -239,11 +240,18 @@ def HandleSelection(id, name, page=1):
 
     return oc
 
+@route(constants.PREFIX + '/container')
+def HandleContainer(path, title, name, thumb=None):
+    if service.is_single_movie(path):
+        return HandleMovie(path=path, name=name, thumb=thumb)
+    else:
+        return HandleSeasons(path=path, title=title, name=name, thumb=thumb)
+
 @route(constants.PREFIX + '/search')
 def HandleSearch(query=None, page=1):
     oc = ObjectContainer(title2=unicode(L('Search')))
 
-    response = service.search(query=query)
+    response = service.search(query=query, page=page)
 
     for movie in response['movies']:
         name = movie['name']
@@ -311,7 +319,7 @@ def HandleQueue():
     return oc
 
 @route(constants.PREFIX + '/audio_track')
-def GetAudioTrack(title, thumb, artist, format, bitrate, duration, url, container=False):
+def GetAudioTrack(path, name, artist, format, bitrate, duration, container=False):
     if 'm4a' in format:
         container = Container.MP4
         audio_codec = AudioCodec.AAC
@@ -319,9 +327,9 @@ def GetAudioTrack(title, thumb, artist, format, bitrate, duration, url, containe
         container = Container.MP3
         audio_codec = AudioCodec.MP3
 
-    urls = [
+    url_items = [
         {
-            "path": url,
+            "url": path,
             "config": {
                 "container": container,
                 "audio_codec": audio_codec,
@@ -331,11 +339,11 @@ def GetAudioTrack(title, thumb, artist, format, bitrate, duration, url, containe
         }
     ]
 
-    track = MetadataObjectForURL2(title=title, thumb=thumb, artist=artist, format=format, bitrate=bitrate,
-                                  duration=duration, urls=urls, player=PlayAudio, container=container)
+    track = MetadataObjectForURL2(media_type="track", path=path, name=name, artist=artist, format=format,
+                                  bitrate=bitrate, duration=duration, url_items=url_items, player=PlayAudio)
 
     if container:
-        oc = ObjectContainer(title2=unicode(title))
+        oc = ObjectContainer(title2=unicode(name))
 
         oc.add(track)
 
@@ -343,32 +351,15 @@ def GetAudioTrack(title, thumb, artist, format, bitrate, duration, url, containe
     else:
         return track
 
-def MetadataObjectForURL(path, name, thumb, urls, player):
-    params = {}
+def MetadataObjectForURL(media_type, path, name, thumb, url_items, player):
+    metadata_object = builder.build_metadata_object(media_type=media_type, title=name)
 
-    # document = service.fetch_document(path)
-    # data = service.get_media_data(document)
-    #
-    # if episode:
-    #     media_type = 'episode'
-    #     params['index'] = int(episode)
-    #     params['season'] = int(season)
-    #     params['content_rating'] = data['rating']
-    #     # show=show,
-    # else:
-    #     media_type = 'movie'
-    #     params['year'] = data['year']
-    #     params['genres'] = data['genres']
-    #     params['countries'] = data['countries']
-    #     params['genres'] = data['genres']
-    #     # video.tagline = 'tagline'
-    #     # video.original_title = 'original_title'
+    metadata_object.key = Callback(HandleMovie, path=path, name=name, thumb=thumb, container=True)
 
-    video = builder.build_metadata_object(media_type='movie', title=name)
-
-    video.rating_key = 'rating_key'
+    # metadata_object.rating_key = 'rating_key'
+    metadata_object.rating_key = unicode(name)
     # video.rating = data['rating']
-    video.thumb = thumb
+    metadata_object.thumb = thumb
     # video.url = urls['m3u8'][0]
     # video.art = data['thumb']
     # video.tags = data['tags']
@@ -376,34 +367,32 @@ def MetadataObjectForURL(path, name, thumb, urls, player):
     # video.summary = data['summary']
     # video.directors = data['directors']
 
-    video.key = Callback(HandleMovie, path=path, name=name, thumb=thumb, container=True)
-
-    video.items.extend(MediaObjectsForURL(urls, player=player))
-
-    return video
-
-def MetadataObjectForURL2(title, thumb, artist, format, bitrate, duration, urls, player, container):
-    metadata_object = builder.build_metadata_object(media_type='track', title=title)
-
-    metadata_object.key = Callback(GetAudioTrack, title=title, thumb=thumb, artist=artist, format=format,
-                                   bitrate=bitrate, duration=duration, urls=urls, container=False)
-    metadata_object.rating_key = unicode(title)
-    metadata_object.title = unicode(title)
-    metadata_object.thumb = thumb
-    metadata_object.artist = artist
-
-    metadata_object.items.extend(MediaObjectsForURL(urls, player))
+    metadata_object.items.extend(MediaObjectsForURL(url_items, player=player))
 
     return metadata_object
 
-def MediaObjectsForURL(urls, player):
+def MetadataObjectForURL2(media_type, path, name, artist, format, bitrate, duration, url_items, player):
+    metadata_object = builder.build_metadata_object(media_type=media_type, title=name)
+
+    metadata_object.key = Callback(GetAudioTrack, path=path, name=name, artist=artist, format=format,
+                                   bitrate=bitrate, duration=duration, container=True)
+    metadata_object.rating_key = unicode(name)
+    #metadata_object.title = unicode(name)
+    # metadata_object.thumb = thumb
+    metadata_object.artist = artist
+
+    metadata_object.items.extend(MediaObjectsForURL(url_items, player))
+
+    return metadata_object
+
+def MediaObjectsForURL(url_items, player):
     media_objects = []
 
-    for url in urls:
-        path = url['path']
-        config = url['config']
+    for item in url_items:
+        url = item['url']
+        config = item['config']
 
-        play_callback = Callback(player, url=path)
+        play_callback = Callback(player, url=url)
 
         media_object = builder.build_media_object(play_callback, config)
 
