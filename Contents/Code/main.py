@@ -188,12 +188,8 @@ def HandleAlbum(name, thumb, artist, tracks, container=False):
         bitrate = track['bitrate']
         duration = track['duration']
 
-        oc.add(DirectoryObject(
-            key=Callback(GetAudioTrack, path=url, name=name, artist=artist, format=format,
-                         bitrate=bitrate, duration=duration, container=container),
-            title=unicode(name),
-            thumb=thumb
-        ))
+        oc.add(GetAudioTrack(path=url, name=unicode(name), artist=artist, format=format,
+                             bitrate=bitrate, duration=duration))
 
     return oc
 
@@ -321,17 +317,17 @@ def HandleQueue():
 @route(constants.PREFIX + '/audio_track')
 def GetAudioTrack(path, name, artist, format, bitrate, duration, container=False):
     if 'm4a' in format:
-        container = Container.MP4
+        audio_container = Container.MP4
         audio_codec = AudioCodec.AAC
     else:
-        container = Container.MP3
+        audio_container = Container.MP3
         audio_codec = AudioCodec.MP3
 
     url_items = [
         {
             "url": path,
             "config": {
-                "container": container,
+                "container": audio_container,
                 "audio_codec": audio_codec,
                 "bitrate": bitrate,
                 "duration": duration,
@@ -374,8 +370,8 @@ def MetadataObjectForURL(media_type, path, name, thumb, url_items, player):
 def MetadataObjectForURL2(media_type, path, name, artist, format, bitrate, duration, url_items, player):
     metadata_object = builder.build_metadata_object(media_type=media_type, title=name)
 
-    metadata_object.key = Callback(GetAudioTrack, path=path, name=name, artist=artist, format=format,
-                                   bitrate=bitrate, duration=duration, container=True)
+    metadata_object.key = Callback(GetAudioTrack, path=path, name=name, artist=artist,
+                                   format=format, bitrate=bitrate, duration=duration, container=True)
     metadata_object.rating_key = unicode(name)
     #metadata_object.title = unicode(name)
     # metadata_object.thumb = thumb
