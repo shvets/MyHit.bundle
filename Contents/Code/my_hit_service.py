@@ -253,7 +253,7 @@ class MyHitService(HttpService):
 
         urls = self.get_play_list_urls(new_url)
 
-        return urls
+        return reversed(urls)
 
     def extract_pagination_data(self, path, page):
         page = int(page)
