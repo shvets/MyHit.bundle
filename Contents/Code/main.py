@@ -86,7 +86,7 @@ def HandleMovie(path, name, thumb, container=False):
 
     return oc
 
-@route(constants.PREFIX + '/all_serials')
+@route(constants.PREFIX + '/serials')
 def HandleSerials(page=1):
     oc = ObjectContainer(title2=unicode(L('Serials')))
 
@@ -98,7 +98,7 @@ def HandleSerials(page=1):
         thumb = item['thumb']
 
         oc.add(DirectoryObject(
-            key=Callback(HandleSerial, path=path, name=name, thumb=thumb),
+            key=Callback(HandleMovie, path=path, name=name, thumb=thumb),
             title=util.sanitize(name),
             thumb=thumb
         ))
@@ -119,47 +119,12 @@ def HandlePopularSerials(page=1):
         thumb = item['thumb']
 
         oc.add(DirectoryObject(
-            key=Callback(HandleSerial, path=path, name=name, thumb=thumb),
+            key=Callback(HandleMovie, path=path, name=name, thumb=thumb),
             title=util.sanitize(name),
             thumb=thumb
         ))
 
     pagination.append_controls(oc, response, page=int(page), callback=HandlePopularSerials)
-
-    return oc
-
-@route(constants.PREFIX + '/serial')
-def HandleSerial(path, name, thumb, container=False):
-    oc = ObjectContainer(title2=unicode(L(name)))
-
-    urls = service.get_urls(path)
-
-    urls_items = []
-
-    for index, url in enumerate(urls):
-        metadata = service.get_metadata(url)
-
-        urls_items.append({
-            "path": url,
-            "config": {
-                "width": metadata['width'],
-                "height": metadata['height'],
-                "video_resolution": metadata['height'],
-                "bitrate": metadata['bitrate']
-            }
-        })
-
-    # if operation == 'add':
-    #     service.queue.add_bookmark(path=path, title=title, name=name, thumb=thumb, season=season, episode=episode)
-    # elif operation == 'remove':
-    #     service.queue.remove_bookmark(path=path, title=title, name=name, thumb=thumb, season=season, episode=episode)
-
-    oc.add(MetadataObjectForURL(path=path, name=name, thumb=thumb, urls=urls_items, player=PlayVideo))
-
-    # if str(container) == 'False':
-    #     history.push_to_history(path=path, title=title, name=name, thumb=thumb, season=season, episode=episode)
-    #     service.queue.append_controls(oc, HandleMovie, path=path, title=title, name=name, thumb=thumb, season=season,
-    #                                   episode=episode)
 
     return oc
 
@@ -214,8 +179,6 @@ def HandleSoundtrack(path, name):
 @route(constants.PREFIX + '/album')
 def HandleAlbum(name, thumb, artist, tracks, container=False):
     oc = ObjectContainer(title2=unicode(name))
-
-    # tracks = album['tracks']
 
     for track in json.loads(tracks):
         url = track['url']
