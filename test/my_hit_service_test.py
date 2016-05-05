@@ -112,6 +112,13 @@ class MyHitServiceTest(unittest.TestCase):
 
         print(json.dumps(result, indent=4))
 
+    def test_convert_track_duration(self):
+        text = '02:11'
+
+        result = self.service.convert_track_duration(text)
+
+        print result
+
     def test_get_play_list3(self):
         movies = self.service.get_popular_movies()['movies']
 

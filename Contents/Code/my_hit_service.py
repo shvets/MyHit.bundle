@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import re
 from http_service import HttpService
 
 class MyHitService(HttpService):
@@ -149,7 +150,7 @@ class MyHitService(HttpService):
                 list[index]['tracks'].append({
                   "url": self.URL + track.get("data-file-url") + ".mp3",
                   "name": name,
-                  "duration": duration,
+                  "duration": self.convert_track_duration(duration),
                   "bitrate": int(bitrate)
                 })
 
@@ -318,8 +319,29 @@ class MyHitService(HttpService):
 
         return thumb
 
-    def convert_duration(self, s):
-        tokens = s.split(' ')
+
+    # def convert_duration(self, s):
+    #     tokens = s.split(' ')
+    #
+    #     result = []
+    #
+    #     for token in tokens:
+    #         data = re.search('(\d+)', token)
+    #
+    #         if data:
+    #             result.append(data.group(0))
+    #
+    #     if len(result) == 2:
+    #         hours = int(result[0])
+    #         minutes = int(result[1])
+    #     else:
+    #         hours = 0
+    #         minutes = int(result[0])
+    #
+    #     return hours * 60 * 60 + minutes * 60
+
+    def convert_track_duration(self, s):
+        tokens = s.split(':')
 
         result = []
 
@@ -329,12 +351,7 @@ class MyHitService(HttpService):
             if data:
                 result.append(data.group(0))
 
-        if len(result) == 2:
-            hours = int(result[0])
-            minutes = int(result[1])
-        else:
-            hours = 0
-            minutes = int(result[0])
+        minutes = int(result[0])
+        seconds = int(result[1])
 
-        return hours * 60 * 60 + minutes * 60
-
+        return minutes*60 + seconds

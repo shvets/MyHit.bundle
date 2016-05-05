@@ -155,8 +155,6 @@ def HandleSoundtracks(page=1):
 def HandleSoundtrack(path, name):
     albums = service.get_albums(path)
 
-    Log(albums)
-
     if len(albums) > 1:
         oc = ObjectContainer(title2=unicode(name))
 
@@ -355,14 +353,14 @@ def MetadataObjectForURL(media_type, path, name, thumb, url_items, player, paren
 
     # metadata_object.rating_key = 'rating_key'
     metadata_object.rating_key = unicode(name)
-    # video.rating = data['rating']
+    # metadata_object.rating = data['rating']
     metadata_object.thumb = thumb
-    # video.url = urls['m3u8'][0]
-    # video.art = data['thumb']
-    # video.tags = data['tags']
-    # video.duration = data['duration'] * 1000
-    # video.summary = data['summary']
-    # video.directors = data['directors']
+    # metadata_object.url = urls['m3u8'][0]
+    # metadata_object.art = data['thumb']
+    # metadata_object.tags = data['tags']
+    # metadata_object.duration = data['duration'] * 1000
+    # metadata_object.summary = data['summary']
+    # metadata_object.directors = data['directors']
 
     metadata_object.items.extend(MediaObjectsForURL(url_items, player=player))
 
@@ -374,8 +372,7 @@ def MetadataObjectForURL2(media_type, path, name, artist, format, bitrate, durat
     metadata_object.key = Callback(GetAudioTrack, path=path, name=name, artist=artist,
                                    format=format, bitrate=bitrate, duration=duration, container=True)
     metadata_object.rating_key = unicode(name)
-    #metadata_object.title = unicode(name)
-    # metadata_object.thumb = thumb
+    metadata_object.duration = int(duration) * 1000
     metadata_object.artist = artist
 
     metadata_object.items.extend(MediaObjectsForURL(url_items, player))
