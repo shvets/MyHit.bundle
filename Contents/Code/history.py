@@ -9,7 +9,7 @@ def push_to_history(**params):
 
     history[params['path']] = {
         'path': params['path'],
-        'title': params['title'],
+        'name': params['name'],
         'thumb': params['thumb'],
         'season': params['season'],
         'episode': params['episode'],

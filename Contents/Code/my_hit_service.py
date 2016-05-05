@@ -310,4 +310,31 @@ class MyHitService(HttpService):
 
         return urls
 
+    def get_thumb(self, path):
+        if path.find(self.URL) < 0:
+            thumb = self.URL + path
+        else:
+            thumb = path
+
+        return thumb
+
+    def convert_duration(self, s):
+        tokens = s.split(' ')
+
+        result = []
+
+        for token in tokens:
+            data = re.search('(\d+)', token)
+
+            if data:
+                result.append(data.group(0))
+
+        if len(result) == 2:
+            hours = int(result[0])
+            minutes = int(result[1])
+        else:
+            hours = 0
+            minutes = int(result[0])
+
+        return hours * 60 * 60 + minutes * 60
 

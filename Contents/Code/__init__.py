@@ -3,9 +3,9 @@
 import util
 import history
 import constants
-from my_hit_service import MyHitService
+from plex_service import PlexService
 
-service = MyHitService()
+service = PlexService()
 
 import main
 
@@ -30,9 +30,9 @@ def MainMenu():
     oc = ObjectContainer(title2=unicode(L('Title')), no_cache=True)
 
     oc.add(DirectoryObject(key=Callback(main.HandleMovies), title=unicode(L('Movies'))))
-    oc.add(DirectoryObject(key=Callback(main.HandleSeasons), title=unicode(L('Series'))))
+    oc.add(DirectoryObject(key=Callback(main.HandleSeries), title=unicode(L('Series'))))
     oc.add(DirectoryObject(key=Callback(main.HandlePopularMovies), title=unicode(L('Popular Movies'))))
-    oc.add(DirectoryObject(key=Callback(main.HandlePopularSerials), title=unicode(L('Popular Series'))))
+    oc.add(DirectoryObject(key=Callback(main.HandlePopularSeries), title=unicode(L('Popular Series'))))
     oc.add(DirectoryObject(key=Callback(main.HandleSoundtracks), title=unicode(L('Soundtracks'))))
     oc.add(DirectoryObject(key=Callback(main.HandleSelections), title=unicode(L('Selections'))))
     oc.add(DirectoryObject(key=Callback(main.HandleHistory), title=unicode(L('History'))))
