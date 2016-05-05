@@ -11,22 +11,27 @@ class MyHitServiceTest(unittest.TestCase):
     def setUp(self):
         self.service = MyHitService()
 
-    def test_get_get_all_movies(self):
+    def test_get_all_movies(self):
         result = self.service.get_all_movies()
 
         print(json.dumps(result, indent=4))
 
-    def test_get_get_all_serials(self):
-        result = self.service.get_all_serials()
+    def test_get_all_series(self):
+        result = self.service.get_all_series()
 
         print(json.dumps(result, indent=4))
 
-    def test_get_get_popular_movies(self):
+    def test_get_serial(self):
+        result = self.service.get_all_series()
+
+        print(json.dumps(result, indent=4))
+
+    def test_get_popular_movies(self):
         result = self.service.get_popular_movies()
 
         print(json.dumps(result, indent=4))
 
-    def test_get_get_popular_serials(self):
+    def test_get_popular_serials(self):
         result = self.service.get_popular_serials()
 
         print(json.dumps(result, indent=4))
@@ -58,7 +63,7 @@ class MyHitServiceTest(unittest.TestCase):
 
         print(json.dumps(result, indent=4))
 
-    def test_get_get_urls(self):
+    def test_get_urls(self):
         movies = self.service.get_popular_movies()['movies']
 
         movie = movies[0]

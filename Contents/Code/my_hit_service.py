@@ -25,14 +25,14 @@ class MyHitService(HttpService):
     def get_all_movies(self, page=1):
         return self.get_movies("/film/", page=page)
 
-    def get_all_serials(self, page=1):
-        return self.get_serials("/serial/", page=page)
+    def get_all_series(self, page=1):
+        return self.get_series("/serial/", page=page)
 
     def get_popular_movies(self, page=1):
         return self.get_movies("/film/?s=3", page=page)
 
     def get_popular_serials(self, page=1):
-        return self.get_serials("/serial/?s=3", page=page)
+        return self.get_series("/serial/?s=3", page=page)
 
     # def get_selected_movies(self, page=1):
     #     return self.get_movies("/selection/film", page=page)
@@ -63,7 +63,7 @@ class MyHitService(HttpService):
 
         return {"movies": list, "pagination": pagination["pagination"]}
 
-    def get_serials(self, path, page=1):
+    def get_series(self, path, page=1):
         list = []
 
         page_path = self.get_page_path(path, page)

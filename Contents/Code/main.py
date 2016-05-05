@@ -91,7 +91,7 @@ def HandleMovie(path, name, thumb, parentName=None, season=None, episode=None, o
 def HandleSeries(path, parentName, name, thumb, page=1):
     oc = ObjectContainer(title2=unicode(L('Serials')))
 
-    response = service.get_all_serials(page=page)
+    response = service.get_all_series(page=page)
 
     for item in response['movies']:
         name = item['name']
