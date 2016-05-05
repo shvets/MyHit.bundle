@@ -142,7 +142,7 @@ def HandleSoundtracks(page=1):
         thumb = item['thumb']
 
         oc.add(DirectoryObject(
-            key=Callback(HandleSoundtrack, path=path, name=name),
+            key=Callback(HandleSoundtrack, path=path, name=name, thumb=thumb),
             title=util.sanitize(name),
             thumb=thumb
         ))
@@ -152,32 +152,40 @@ def HandleSoundtracks(page=1):
     return oc
 
 @route(constants.PREFIX + '/soundtrack')
-def HandleSoundtrack(path, name):
+def HandleSoundtrack(path, name, thumb, operation=None, container=False):
     albums = service.get_albums(path)
 
-    if len(albums) > 1:
-        oc = ObjectContainer(title2=unicode(name))
+    oc = ObjectContainer(title2=unicode(name))
 
-        for index, album in enumerate(albums):
-            name = album['name'] + " (album " + str(index+1) + ")"
-            thumb = album['thumb']
-            artist = album['composer']
-            tracks = album['tracks']
+    albums_count = len(albums)
 
-            oc.add(DirectoryObject(
-                key=Callback(HandleAlbum, name=name, artist=artist, tracks=json.dumps(tracks)),
-                title=util.sanitize(name),
-                thumb=thumb
-            ))
+    for index, album in enumerate(albums):
+        prefix = str(index + 1) + ". " if albums_count > 1 else ""
 
-        return oc
-    else:
-        album = albums[0]
+        name = prefix + album['name']
+        thumb = album['thumb']
+        artist = album['composer']
+        tracks = album['tracks']
 
-        return HandleAlbum(name=album['name'], thumb=album['thumb'], artist=album['composer'], tracks=json.dumps(album['tracks']))
+        oc.add(DirectoryObject(
+            key=Callback(HandleTracks, name=name, artist=artist, tracks=json.dumps(tracks)),
+            title=util.sanitize(name),
+            thumb=thumb
+        ))
 
-@route(constants.PREFIX + '/album')
-def HandleAlbum(name, artist, tracks, container=False):
+    if operation == 'add':
+        service.queue.add_bookmark(path=path, name=name, thumb=thumb, audio=True)
+    elif operation == 'remove':
+        service.queue.remove_bookmark(path=path, name=name, thumb=thumb, audio=True)
+
+    if str(container) == 'False':
+        history.push_to_history(path=path, name=name, thumb=thumb)
+        service.queue.append_controls(oc, HandleSoundtrack, path=path, name=name, thumb=thumb)
+
+    return oc
+
+@route(constants.PREFIX + '/tracks')
+def HandleTracks(name, artist, tracks):
     oc = ObjectContainer(title2=unicode(name))
 
     for track in json.loads(tracks):
@@ -301,6 +309,12 @@ def HandleQueue():
         elif 'season' in item:
             oc.add(DirectoryObject(
                 key=Callback(HandleSeries, **item),
+                title=util.sanitize(item['name']),
+                thumb=item['thumb']
+            ))
+        elif 'audio' in item:
+            oc.add(DirectoryObject(
+                key=Callback(HandleSoundtrack, **item),
                 title=util.sanitize(item['name']),
                 thumb=item['thumb']
             ))

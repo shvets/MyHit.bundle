@@ -7,14 +7,20 @@ def push_to_history(**params):
     if not history:
         history = {}
 
-    history[params['path']] = {
+    path = params['path']
+
+    history[path] = {
         'path': params['path'],
         'name': params['name'],
         'thumb': params['thumb'],
-        'season': params['season'],
-        'episode': params['episode'],
-        'time': Datetime.TimestampFromDatetime(Datetime.Now()),
+        'time': Datetime.TimestampFromDatetime(Datetime.Now())
     }
+
+    if 'season' in params:
+        history[path]['season'] = params['season']
+
+    if 'episode' in params:
+        history[path]['episode'] = params['episode']
 
     # Trim old items
     if len(history) > HISTORY_SIZE:
