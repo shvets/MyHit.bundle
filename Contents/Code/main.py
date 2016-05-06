@@ -9,8 +9,8 @@ from flow_builder import FlowBuilder
 
 builder = FlowBuilder()
 
-@route(constants.PREFIX + '/movies')
-def HandleMovies(page=1):
+@route(constants.PREFIX + '/all_movies')
+def HandleAllMovies(page=1):
     oc = ObjectContainer(title2=unicode(L('Movies')))
 
     response = service.get_all_movies(page=page)
@@ -26,7 +26,7 @@ def HandleMovies(page=1):
             thumb=thumb
         ))
 
-    pagination.append_controls(oc, response, callback=HandleMovies, page=page)
+    pagination.append_controls(oc, response, callback=HandleAllMovies, page=page)
 
     return oc
 
@@ -87,8 +87,8 @@ def HandleMovie(path, name, thumb, parentName=None, season=None, episode=None, o
 
     return oc
 
-@route(constants.PREFIX + '/series')
-def HandleSeries(path, parentName, name, thumb, page=1):
+@route(constants.PREFIX + '/all_series')
+def HandleAllSeries(page=1):
     oc = ObjectContainer(title2=unicode(L('Serials')))
 
     response = service.get_all_series(page=page)
@@ -104,7 +104,28 @@ def HandleSeries(path, parentName, name, thumb, page=1):
             thumb=thumb
         ))
 
-    pagination.append_controls(oc, response, callback=HandleSeries, path=path,
+    pagination.append_controls(oc, response, callback=HandleAllSeries, page=page)
+
+    return oc
+
+@route(constants.PREFIX + '/seasons')
+def HandleSeasons(path, parentName, name, thumb, page=1):
+    oc = ObjectContainer(title2=unicode(L('Serials')))
+
+    response = service.get_all_series(page=page)
+
+    for item in response['movies']:
+        name = item['name']
+        path = item['path']
+        thumb = item['thumb']
+
+        oc.add(DirectoryObject(
+            key=Callback(HandleMovie, path=path, name=name, thumb=thumb),
+            title=util.sanitize(name),
+            thumb=thumb
+        ))
+
+    pagination.append_controls(oc, response, callback=HandleSeasons, path=path,
                                parentName=parentName, name=name, thumb=thumb, page=page)
 
     return oc
@@ -152,7 +173,7 @@ def HandleSoundtracks(page=1):
     return oc
 
 @route(constants.PREFIX + '/soundtrack')
-def HandleSoundtrack(path, name, thumb, operation=None, container=False):
+def HandleSoundtrack(path, name, thumb, audio=True, operation=None, container=False):
     albums = service.get_albums(path)
 
     oc = ObjectContainer(title2=unicode(name))
@@ -162,14 +183,14 @@ def HandleSoundtrack(path, name, thumb, operation=None, container=False):
     for index, album in enumerate(albums):
         prefix = str(index + 1) + ". " if albums_count > 1 else ""
 
-        name = prefix + album['name']
+        album_name = prefix + album['name']
         thumb = album['thumb']
         artist = album['composer']
         tracks = album['tracks']
 
         oc.add(DirectoryObject(
-            key=Callback(HandleTracks, name=name, artist=artist, tracks=json.dumps(tracks)),
-            title=util.sanitize(name),
+            key=Callback(HandleTracks, name=album_name, artist=artist, tracks=json.dumps(tracks)),
+            title=util.sanitize(album_name),
             thumb=thumb
         ))
 
@@ -180,7 +201,7 @@ def HandleSoundtrack(path, name, thumb, operation=None, container=False):
 
     if str(container) == 'False':
         history.push_to_history(path=path, name=name, thumb=thumb)
-        service.queue.append_controls(oc, HandleSoundtrack, path=path, name=name, thumb=thumb)
+        service.queue.append_controls(oc, HandleSoundtrack, path=path, name=name, thumb=thumb, audio=audio)
 
     return oc
 
@@ -248,7 +269,7 @@ def HandleContainer(path, parentName, name, thumb=None):
     if service.is_single_movie(path):
         return HandleMovie(path=path, name=name, thumb=thumb)
     else:
-        return HandleSeries(path=path, parentName=parentName, name=name, thumb=thumb)
+        return HandleSeasons(path=path, parentName=parentName, name=name, thumb=thumb)
 
 @route(constants.PREFIX + '/search')
 def HandleSearch(query=None, page=1):
@@ -308,7 +329,7 @@ def HandleQueue():
             ))
         elif 'season' in item:
             oc.add(DirectoryObject(
-                key=Callback(HandleSeries, **item),
+                key=Callback(HandleSeasons, **item),
                 title=util.sanitize(item['name']),
                 thumb=item['thumb']
             ))

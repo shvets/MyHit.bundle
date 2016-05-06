@@ -86,6 +86,30 @@ class MyHitService(HttpService):
 
         return {"movies": list, "pagination": pagination["pagination"]}
 
+    def get_serie_data(self, path):
+        list = []
+
+        document = self.fetch_document(self.URL + path)
+
+        items = document.xpath('//div[@class="serial-list"]/div[@class="row"]')
+
+        for item in items:
+            pass
+        #     link = item.xpath('div/a')[0]
+        #
+        #     href = link.xpath('@href')[0]
+        #     name = link.get("title")
+        #     name = name[:len(name) - 18]
+        #     thumb = self.URL + link.xpath('div/img/@src')[0]
+        #
+        #     list.append({'path': href, 'thumb': thumb, 'name': name})
+        #
+        # pagination = self.extract_pagination_data(page_path, page=page)
+        #
+        # return {"movies": list, "pagination": pagination["pagination"]}
+
+        return list
+
     def get_soundtracks(self, page=1):
         list = []
 
@@ -108,7 +132,7 @@ class MyHitService(HttpService):
 
         pagination = self.extract_pagination_data(page_path, page=page)
 
-        return {"movies": list, "pagination": pagination["pagination"]}
+        return {"movies": self.unique(list, "path"), "pagination": pagination["pagination"]}
 
     def get_albums(self, path, page=1):
         list = []
@@ -355,3 +379,19 @@ class MyHitService(HttpService):
         seconds = int(result[1])
 
         return minutes*60 + seconds
+
+    def unique(self, elements, key):
+        new_elements = []
+
+        for el in elements:
+            values = []
+
+            for el2 in new_elements:
+                values.append(el2[key])
+
+            if el[key] not in values:
+                new_elements.append(el)
+
+        return new_elements
+
+        # return [dict(y) for y in set(tuple(x.items()) for x in elements)]

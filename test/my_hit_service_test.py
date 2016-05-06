@@ -22,7 +22,13 @@ class MyHitServiceTest(unittest.TestCase):
         print(json.dumps(result, indent=4))
 
     def test_get_serial(self):
-        result = self.service.get_all_series()
+        series = self.service.get_all_series()['movies']
+
+        serie = series[0]
+
+        print serie
+
+        result = self.service.get_serie_data(serie['path'])
 
         print(json.dumps(result, indent=4))
 
@@ -40,6 +46,7 @@ class MyHitServiceTest(unittest.TestCase):
         result = self.service.get_soundtracks()
 
         print(json.dumps(result, indent=4))
+        print(len(result["movies"]))
 
     def test_get_albums(self):
         result = self.service.get_soundtracks()['movies']
