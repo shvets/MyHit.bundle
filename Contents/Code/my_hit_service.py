@@ -284,6 +284,24 @@ class MyHitService(HttpService):
 
         return reversed(urls)
 
+    def get_urls_with_metadata(self, path):
+        urls_items = []
+
+        for index, url in enumerate( self.get_urls(path)):
+            metadata = self.get_metadata(url)
+
+            urls_items.append({
+                "url": url,
+                "config": {
+                    "width": metadata['width'],
+                    "height": metadata['height'],
+                    "video_resolution": metadata['height'],
+                    "bitrate": metadata['bitrate']
+                }
+            })
+
+        return urls_items
+
     def extract_pagination_data(self, path, page):
         page = int(page)
 

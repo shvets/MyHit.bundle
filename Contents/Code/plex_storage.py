@@ -26,9 +26,12 @@ class PlexStorage(Storage):
             ))
 
     def add_bookmark(self, **params):
-        self.add(**params)
+        bookmark = self.get_bookmark(**params)
 
-        self.save()
+        if not bookmark:
+            self.add(**params)
+
+            self.save()
 
     def remove_bookmark(self, **params):
         self.remove(**params)
@@ -36,6 +39,17 @@ class PlexStorage(Storage):
         self.save()
 
     def get_bookmark(self, **params):
+        if 'season' in params and not params['season']:
+            del(params['season'])
+
+        if 'episode' in params and not params['episode']:
+            del(params['episode'])
+
+        if 'parentName' in params and not params['parentName']:
+            del(params['parentName'])
+
+        Log(params)
+
         found = None
 
         for item in self.data:

@@ -55,22 +55,7 @@ def HandlePopularMovies(page=1):
 def HandleMovie(path, name, thumb, parentName=None, season=None, episode=None, operation=None, container=False):
     oc = ObjectContainer(title2=unicode(L(name)))
 
-    urls = service.get_urls(path)
-
-    urls_items = []
-
-    for index, url in enumerate(urls):
-        metadata = service.get_metadata(url)
-
-        urls_items.append({
-            "url": url,
-            "config": {
-                "width": metadata['width'],
-                "height": metadata['height'],
-                "video_resolution": metadata['height'],
-                "bitrate": metadata['bitrate']
-            }
-        })
+    url_items = service.get_urls_with_metadata(path)
 
     if operation == 'add':
         service.queue.add_bookmark(path=path, name=name, thumb=thumb, season=season, episode=episode)
@@ -78,7 +63,7 @@ def HandleMovie(path, name, thumb, parentName=None, season=None, episode=None, o
         service.queue.remove_bookmark(path=path, name=name, thumb=thumb, season=season, episode=episode)
 
     oc.add(MetadataObjectForURL(media_type="movie", path=path, name=name, thumb=thumb,
-                                url_items=urls_items, player=PlayVideo, parentName=parentName))
+                                url_items=url_items, player=PlayVideo, parentName=parentName))
 
     if str(container) == 'False':
         history.push_to_history(path=path, name=name, thumb=thumb, parentName=parentName, season=season, episode=episode)
