@@ -66,7 +66,7 @@ class MyHitServiceTest(unittest.TestCase):
         selection = selections[0]
         print(json.dumps(selection, indent=4))
 
-        result = self.service.get_selection(id=selection['id'])
+        result = self.service.get_selection(path=selection['path'])
 
         print(json.dumps(result, indent=4))
 

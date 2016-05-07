@@ -12,9 +12,13 @@ class Storage():
         return True
 
     def add(self, item):
+        self.sanitize(item)
+
         self.data.append(item)
 
     def remove(self, item):
+        # Log(self.data)
+        # Log(item)
         self.data.remove(item)
 
     def load(self):
@@ -31,4 +35,15 @@ class Storage():
 
     def save_storage(self, data):
         self.data = data
+
+    @staticmethod
+    def sanitize(item):
+        empty_key_values = []
+
+        for key, value in item.iteritems():
+            if not item[key]:
+                empty_key_values.append(key)
+
+        for key in empty_key_values:
+            del item[key]
 

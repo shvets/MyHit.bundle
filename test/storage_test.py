@@ -39,5 +39,12 @@ class StorageTest(unittest.TestCase):
 
         self.subject.save()
 
+    def test_sanitize(self):
+        item = MediaInfo(season=None)
+
+        Storage.sanitize(item)
+
+        self.assertEqual('season' in item, False)
+
 if __name__ == '__main__':
     unittest.main()

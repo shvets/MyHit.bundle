@@ -16,13 +16,13 @@ class BookmarkStorageTest(unittest.TestCase):
     def tearDown(self):
         if os.path.exists(self.subject.file_name):
             os.remove(self.subject.file_name)
-
-    def test_sanitize(self):
-        item = MediaInfo(season=None)
-
-        new_item = self.subject.sanitize(item)
-
-        self.assertEqual('season' in new_item, False)
+    #
+    # def test_sanitize(self):
+    #     item = MediaInfo(season=None)
+    #
+    #     new_item = self.subject.sanitize(item)
+    #
+    #     self.assertEqual('season' in new_item, False)
 
     def test_find_video(self):
         Storage.add(self.subject, MediaInfo('video', path='path1'))

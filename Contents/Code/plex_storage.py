@@ -1,10 +1,10 @@
 import json
 
-from file_storage import FileStorage
+from bookmark_storage import BookmarkStorage
 
-class PlexStorage(FileStorage):
+class PlexStorage(BookmarkStorage):
     def __init__(self, storage, file_name):
-        FileStorage.__init__(self, file_name)
+        BookmarkStorage.__init__(self, file_name)
 
         self.storage = storage
 

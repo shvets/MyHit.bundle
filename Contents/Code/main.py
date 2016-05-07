@@ -6,6 +6,7 @@ import util
 import pagination
 import history
 from flow_builder import FlowBuilder
+from media_info import MediaInfo
 
 builder = FlowBuilder()
 
@@ -62,18 +63,18 @@ def HandleMovie(path, name, thumb, parentName=None, season=None, episode=None, o
 
     url_items = service.get_urls_metadata(urls)
 
-    if operation == 'add':
-        service.queue.add_bookmark(path=path, name=name, thumb=thumb, season=season, episode=episode)
-    elif operation == 'remove':
-        service.queue.remove_bookmark(path=path, name=name, thumb=thumb, season=season, episode=episode)
+    media_info = MediaInfo(path=path, name=name, thumb=thumb, season=season, episode=episode)
 
-    oc.add(MetadataObjectForURL(media_type="movie", path=path, name=name, thumb=thumb,
-                                url_items=url_items, player=PlayVideo, season=season, episode=episode, parentName=parentName))
+    if operation == 'add':
+        service.queue.add(media_info)
+    elif operation == 'remove':
+        service.queue.remove(media_info)
+
+    oc.add(MetadataObjectForURL(media_type="movie", url_items=url_items, player=PlayVideo, parentName=parentName, **media_info))
 
     if str(container) == 'False':
-        history.push_to_history(path=path, name=name, thumb=thumb, parentName=parentName, season=season, episode=episode)
-        service.queue.append_controls(oc, HandleMovie, path=path, name=name, thumb=thumb, parentName=parentName,
-                                      season=season, episode=episode)
+        history.push_to_history(parentName=parentName, **media_info)
+        service.queue.append_controls(oc, HandleMovie, media_info)
 
     return oc
 

@@ -6,13 +6,10 @@ class MediaInfo(dict):
     def __init__(self, type=SIMPLE, **params):
         super(MediaInfo, self).__init__()
 
-        self['type'] = type
+        self.type = type
 
         for key, value in params.iteritems():
             self[key] = value
-
-    def type(self):
-        return self['type']
 
     def value(self, name):
         if name  in self:
