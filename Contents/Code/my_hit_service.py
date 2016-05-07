@@ -171,20 +171,21 @@ class MyHitService(HttpService):
 
             href = link1.xpath('@href')[0]
             name = link1.text_content()
-
-            id = href[2:len(href) - 1]
-
             thumb = self.URL + link2.xpath('img/@src')[0]
 
-            list.append({'id': id, 'thumb': thumb, 'name': name})
+            list.append({'path': href, 'thumb': thumb, 'name': name})
 
         pagination = self.extract_pagination_data(page_path, page=page)
 
         return {"movies": list, "pagination": pagination["pagination"]}
 
-    def get_selection(self, id, page=1):
+    def get_selection_id(self, path):
+        return path[2:len(path) - 1]
+
+    def get_selection(self, path, page=1):
         list = []
 
+        id = self.get_selection_id(path)
         page_path = self.get_page_path("/selection/" + id + '/', page)
 
         document = self.fetch_document(self.URL + page_path)

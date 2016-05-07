@@ -258,12 +258,12 @@ def HandleSelections(page=1):
 
     for item in response['movies']:
         name = item['name']
-        id = item['id']
+        path = item['path']
         thumb = item['thumb']
 
         if name != "Актёры и актрисы" and name != "Актеры и актрисы":
             oc.add(DirectoryObject(
-                key=Callback(HandleSelection, id=id, name=name),
+                key=Callback(HandleSelection, path=path, name=name, thumb=thumb),
                 title=util.sanitize(name),
                 thumb=thumb
             ))
@@ -273,10 +273,15 @@ def HandleSelections(page=1):
     return oc
 
 @route(constants.PREFIX + '/selection')
-def HandleSelection(id, name, page=1):
+def HandleSelection(path, name, thumb, page=1, operation=None):
     oc = ObjectContainer(title2=unicode(name))
 
-    response = service.get_selection(id, page=page)
+    if operation == 'add':
+        service.queue.add_bookmark(path=path, name=name, thumb=thumb)
+    elif operation == 'remove':
+        service.queue.remove_bookmark(path=path, name=name, thumb=thumb)
+
+    response = service.get_selection(path, page=page)
 
     for item in response['movies']:
         name = item['name']
@@ -289,7 +294,8 @@ def HandleSelection(id, name, page=1):
             thumb=thumb
         ))
 
-    pagination.append_controls(oc, response, callback=HandleSelection, page=page, id=id, name=name)
+    service.queue.append_controls(oc, HandleSelection, path=path, name=name, thumb=thumb)
+    pagination.append_controls(oc, response, callback=HandleSelection, page=page, path=path, name=name)
 
     return oc
 
