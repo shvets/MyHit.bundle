@@ -55,7 +55,13 @@ def HandlePopularMovies(page=1):
 def HandleMovie(path, name, thumb, parentName=None, season=None, episode=None, operation=None, container=False):
     oc = ObjectContainer(title2=unicode(L(name)))
 
-    url_items = service.get_urls_with_metadata(path)
+    if path.find('http://') >= 0:
+        source_url = path
+    else:
+        source_url = service.get_source_url(path)
+
+    urls = service.get_urls(source_url)
+    url_items = service.get_urls_metadata(urls)
 
     if operation == 'add':
         service.queue.add_bookmark(path=path, name=name, thumb=thumb, season=season, episode=episode)
@@ -116,7 +122,7 @@ def HandlePopularSeries(page=1):
 
 @route(constants.PREFIX + '/seasons')
 def HandleSeasons(path, name, thumb, operation=None):
-    oc = ObjectContainer(title2=unicode(L('Series')))
+    oc = ObjectContainer(title2=unicode(name))
 
     if operation == 'add':
         service.queue.add_bookmark(path=path, name=name, thumb=thumb)
@@ -125,46 +131,53 @@ def HandleSeasons(path, name, thumb, operation=None):
 
     serie_info = service.get_serie_info(path)
 
-    Log(serie_info)
-    Log(len(serie_info))
+    for index, item in enumerate(serie_info):
+        season = index+1
+        season_name = item['pltitle']
+        episodes = item['playlist']
+        rating_key = service.get_episode_url(path, season, 0)
 
-    # for season in sorted(serial_info['seasons'].keys()):
-    # # for item in response['movies']:
-    #     name = item['name']
-    #     path = item['path']
-    #     thumb = item['thumb']
-    #
-    #     oc.add(SeasonObject(
-    #         key=Callback(HandleEpisodes, path=path, name=name, thumb=thumb),
-    #         title=util.sanitize(name),
-    #         thumb=thumb
-    #     ))
-    #
-    # service.queue.append_controls(oc, HandleSeasons, path=path, name=name, thumb=thumb)
+        oc.add(SeasonObject(
+            key=Callback(HandleEpisodes, path=path, name=season_name, thumb=thumb, season=season, episodes=json.dumps(episodes)),
+            rating_key=rating_key,
+            title=util.sanitize(season_name),
+            index=int(season),
+            thumb=thumb
+        ))
+
+    service.queue.append_controls(oc, HandleSeasons, path=path, name=name, thumb=thumb)
 
     return oc
 
 @route(constants.PREFIX + '/episodes', container=bool)
-def HandleEpisodes(path, parentName, name, thumb, season, operation=None, container=False):
-    oc = ObjectContainer(title2=unicode(parentName))
+def HandleEpisodes(path, name, thumb, season, episodes, operation=None, container=False):
+    oc = ObjectContainer(title2=unicode(name))
 
-    if operation == 'add':
-        service.queue.add_bookmark(path=path, parentName=parentName, name=name, thumb=thumb, season=season)
-    elif operation == 'remove':
-        service.queue.remove_bookmark(path=path, parentName=parentName, name=name, thumb=thumb, season=season)
+    # if operation == 'add':
+    #     service.queue.add_bookmark(path=path, parentName=parentName, name=name, thumb=thumb, season=season)
+    # elif operation == 'remove':
+    #     service.queue.remove_bookmark(path=path, parentName=parentName, name=name, thumb=thumb, season=season)
 
-    document = service.get_movie_document(path, season, 1)
-    serial_info = service.get_serial_info(document)
+    # document = service.get_movie_document(path, season, 1)
+    # serial_info = service.get_serial_info(document)
 
-    for episode in sorted(serial_info['episodes'].keys()):
-        episode_name = serial_info['episodes'][episode]
+    for episode in json.loads(episodes):
+        episode_name = episode['comment']
+        thumb = episode['poster']
+        url = episode['file']
 
-        key = Callback(HandleMovie, path=path, title=episode_name, name=name,
+        #Log(url)
+
+        key = Callback(HandleMovie, path=url, name=episode_name,
                        thumb=thumb, season=season, episode=episode, container=container)
 
-        oc.add(DirectoryObject(key=key, title=unicode(episode_name)))
+        oc.add(DirectoryObject(
+            key=key,
+            title=unicode(episode_name),
+            thumb=thumb
+        ))
 
-    service.queue.append_controls(oc, HandleEpisodes, path=path, parentName=parentName, name=name, thumb=thumb, season=season)
+    service.queue.append_controls(oc, HandleEpisodes, path=path, name=name, thumb=thumb, episodes=episodes, season=season)
 
     return oc
 

@@ -30,8 +30,8 @@ def MainMenu():
     oc = ObjectContainer(title2=unicode(L('Title')), no_cache=True)
 
     oc.add(DirectoryObject(key=Callback(main.HandleAllMovies), title=unicode(L('Movies'))))
-    oc.add(DirectoryObject(key=Callback(main.HandleAllSeries), title=unicode(L('Series'))))
     oc.add(DirectoryObject(key=Callback(main.HandlePopularMovies), title=unicode(L('Popular Movies'))))
+    oc.add(DirectoryObject(key=Callback(main.HandleAllSeries), title=unicode(L('Series'))))
     oc.add(DirectoryObject(key=Callback(main.HandlePopularSeries), title=unicode(L('Popular Series'))))
     oc.add(DirectoryObject(key=Callback(main.HandleSoundtracks), title=unicode(L('Soundtracks'))))
     oc.add(DirectoryObject(key=Callback(main.HandleSelections), title=unicode(L('Selections'))))

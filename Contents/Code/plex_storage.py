@@ -48,8 +48,6 @@ class PlexStorage(Storage):
         if 'parentName' in params and not params['parentName']:
             del(params['parentName'])
 
-        Log(params)
-
         found = None
 
         for item in self.data:

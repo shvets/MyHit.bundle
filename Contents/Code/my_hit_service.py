@@ -208,44 +208,20 @@ class MyHitService(HttpService):
         return {"movies": list, "pagination": pagination["pagination"]}
 
     def get_serie_info(self, path):
-        return self.to_json(self.fetch_content(self.URL + path + "/playlist.txt"))['playlist']
+        serie_info = self.to_json(self.fetch_content(self.URL + path + "/playlist.txt"))['playlist']
 
-    # def get_serial_info(self, document):
-    #     ret = {}
-    #
-    #     ret['seasons'] = {}
-    #     ret['episodes'] = {}
-    #
-    #     for item in document.xpath('//select[@id="season"]/option'):
-    #         value = int(item.get('value'))
-    #         ret['seasons'][value] = unicode(item.text_content())
-    #         if item.get('selected'):
-    #             ret['current_season'] = int(value)
-    #
-    #     for item in document.xpath('//select[@id="episode"]/option'):
-    #         value = int(item.get('value'))
-    #         ret['episodes'][value] = unicode(item.text_content())
-    #         if item.get('selected'):
-    #             ret['current_episode'] = int(value)
-    #
-    #     return ret
+        if len(serie_info) > 0 and 'playlist' not in serie_info[0]:
+            serie_info = [{
+                "pltitle": "Сезон 1",
+                "playlist": serie_info
+            }]
+
+        return serie_info
 
     def search(self, query, page=1):
         path = self.build_url("/search/", q=str(query), p=str(page))
 
         return self.get_movies(path=path, page=page)
-
-    def get_source_url(self, path):
-        content = self.fetch_content(self.URL + path)
-
-        document = self.to_document(content)
-
-        script = document.xpath('//div[@class="row"]/div/script')[1].text_content()
-
-        index1 = script.find("file:")
-        index2 = script.find(".f4m")
-
-        return script[index1 + 6:index2] + ".f4m"
 
     def get_metadata(self, url):
         bandwidth = url[url.find("chunklist_b")+11:url.find(".m3u8")]
@@ -274,19 +250,29 @@ class MyHitService(HttpService):
 
         return data[location]
 
-    def get_urls(self, path):
-        url = self.get_source_url(path)
+    def get_source_url(self, url):
+        content = self.fetch_content(url)
 
+        document = self.to_document(content)
+
+        script = document.xpath('//div[@class="row"]/div/script')[1].text_content()
+
+        index1 = script.find("file:")
+        index2 = script.find(".f4m")
+
+        return script[index1 + 6:index2] + ".f4m"
+
+    def get_urls(self, url):
         new_url = url.replace('.f4m', '.m3u8')
 
         urls = self.get_play_list_urls(new_url)
 
         return reversed(urls)
 
-    def get_urls_with_metadata(self, path):
+    def get_urls_metadata(self, urls):
         urls_items = []
 
-        for index, url in enumerate( self.get_urls(path)):
+        for index, url in enumerate(urls):
             metadata = self.get_metadata(url)
 
             urls_items.append({
@@ -360,27 +346,6 @@ class MyHitService(HttpService):
 
         return thumb
 
-
-    # def convert_duration(self, s):
-    #     tokens = s.split(' ')
-    #
-    #     result = []
-    #
-    #     for token in tokens:
-    #         data = re.search('(\d+)', token)
-    #
-    #         if data:
-    #             result.append(data.group(0))
-    #
-    #     if len(result) == 2:
-    #         hours = int(result[0])
-    #         minutes = int(result[1])
-    #     else:
-    #         hours = 0
-    #         minutes = int(result[0])
-    #
-    #     return hours * 60 * 60 + minutes * 60
-
     def convert_track_duration(self, s):
         tokens = s.split(':')
 
@@ -411,4 +376,8 @@ class MyHitService(HttpService):
 
         return new_elements
 
-        # return [dict(y) for y in set(tuple(x.items()) for x in elements)]
+    def get_episode_url(self, url, season, episode):
+        if season:
+            return '%s?season=%d&episode=%d' % (url, int(season), int(episode))
+
+        return url
