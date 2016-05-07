@@ -1,6 +1,7 @@
 class MediaInfo(dict):
     VIDEO = 'video'
     AUDIO = 'audio'
+    SERIE = 'serie'
     SEASON = 'season'
     EPISODE = 'episode'
     SELECTION = 'selection'

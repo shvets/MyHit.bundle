@@ -90,7 +90,7 @@ def HandleAllSeries(page=1):
         thumb = item['thumb']
 
         oc.add(DirectoryObject(
-            key=Callback(HandleSeasons, path=path, name=name, thumb=thumb),
+            key=Callback(HandleSeasons, type=MediaInfo.SERIE, path=path, name=name, thumb=thumb),
             title=util.sanitize(name),
             thumb=thumb
         ))
@@ -111,7 +111,7 @@ def HandlePopularSeries(page=1):
         thumb = item['thumb']
 
         oc.add(DirectoryObject(
-            key=Callback(HandleSeasons, path=path, name=name, thumb=thumb),
+            key=Callback(HandleSeasons, type=MediaInfo.SERIE, path=path, name=name, thumb=thumb),
             title=util.sanitize(name),
             thumb=thumb
         ))
@@ -121,10 +121,10 @@ def HandlePopularSeries(page=1):
     return oc
 
 @route(constants.PREFIX + '/seasons')
-def HandleSeasons(path, name, thumb, operation=None):
+def HandleSeasons(type, path, name, thumb, operation=None):
     oc = ObjectContainer(title2=unicode(name))
 
-    media_info = MediaInfo(type=MediaInfo.SEASON, path=path, name=name, thumb=thumb)
+    media_info = MediaInfo(type=type, path=path, name=name, thumb=thumb)
 
     if operation == 'add':
         service.queue.add(media_info)
@@ -140,7 +140,7 @@ def HandleSeasons(path, name, thumb, operation=None):
         rating_key = service.get_episode_url(path, season, 0)
 
         oc.add(SeasonObject(
-            key=Callback(HandleEpisodes, type=MediaInfo.EPISODE, path=path, name=name, thumb=thumb, season=season, episodes=json.dumps(episodes)),
+            key=Callback(HandleEpisodes, type=MediaInfo.SEASON, path=path, name=name, thumb=thumb, season=season, episodes=json.dumps(episodes)),
             rating_key=rating_key,
             title=util.sanitize(season_name),
             index=int(season),
@@ -155,20 +155,17 @@ def HandleSeasons(path, name, thumb, operation=None):
 def HandleEpisodes(type, path, name, thumb, season, episodes, operation=None, container=False):
     oc = ObjectContainer(title2=unicode(name))
 
-    # if operation == 'add':
-    #     service.queue.add(path=path, parentName=parentName, name=name, thumb=thumb, season=season)
-    # elif operation == 'remove':
-    #     service.queue.remove(path=path, parentName=parentName, name=name, thumb=thumb, season=season)
+    media_info = MediaInfo(type=type, path=path, name=name, thumb=thumb, season=season)
 
-    # document = service.get_movie_document(path, season, 1)
-    # serial_info = service.get_serial_info(document)
+    if operation == 'add':
+        service.queue.add(media_info)
+    elif operation == 'remove':
+        service.queue.remove(media_info)
 
     for episode in json.loads(episodes):
         episode_name = episode['comment']
         thumb = episode['poster']
         url = episode['file']
-
-        Log(url)
 
         key = Callback(HandleMovie, type=MediaInfo.EPISODE, path=url, name=episode_name,
                        thumb=thumb, season=season, episode=episode, container=container)
@@ -181,7 +178,9 @@ def HandleEpisodes(type, path, name, thumb, season, episodes, operation=None, co
 
     media_info = MediaInfo(type=type, path=path, name=name, thumb=thumb, season=season, episodes=episodes)
 
-    service.queue.append_controls(oc, HandleEpisodes, media_info)
+    if str(container) == 'False':
+        history.push_to_history(media_info)
+        service.queue.append_controls(oc, HandleEpisodes, media_info)
 
     return oc
 
@@ -311,7 +310,7 @@ def HandleContainer(type, path, name, thumb=None):
     elif type == MediaInfo.AUDIO:
         return HandleSoundtrack(type=type, path=path, name=name, thumb=thumb)
     elif type == MediaInfo.SEASON:
-        return HandleSeasons(path=path, name=name, thumb=thumb)
+        return HandleSeasons(type=type, path=path, name=name, thumb=thumb)
 
 @route(constants.PREFIX + '/search')
 def HandleSearch(query=None, page=1):
@@ -324,8 +323,10 @@ def HandleSearch(query=None, page=1):
         thumb = movie['thumb']
         path = movie['path']
 
+        Log(path)
+
         oc.add(DirectoryObject(
-            key=Callback(HandleContainer, type=type, path=path, name=name, thumb=thumb),
+            key=Callback(HandleContainer, type=MediaInfo.VIDEO, path=path, name=name, thumb=thumb),
             title=unicode(name),
             thumb=thumb
         ))
