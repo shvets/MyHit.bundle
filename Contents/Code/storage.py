@@ -1,33 +1,34 @@
-import json
-import copy
+class Storage():
+    def __init__(self):
+        self.data = []
 
-class Storage:
-    def __init__(self, storage, file_name):
-        self.storage = storage
-        self.file_name = file_name
-
-        self.clear()
+    def items(self):
+        return self.data
 
     def clear(self):
         self.data = []
 
-    def storage_exist(self):
-        return self.storage.file_exists(self.file_name)
+    def exist(self):
+        return True
+
+    def add(self, item):
+        self.data.append(item)
+
+    def remove(self, item):
+        self.data.remove(item)
 
     def load(self):
         self.clear()
 
-        if self.storage_exist():
-            self.data = json.loads(self.storage.load(self.file_name))
+        if self.exist():
+            self.data = self.load_storage()
 
-    def save(self, data=None):
-        if data:
-            self.data = copy.copy(data)
+    def save(self):
+        self.save_storage(self.data)
 
-        self.storage.save(self.file_name, json.dumps(self.data, indent=4))
+    def load_storage(self):
+        pass
 
-    def add(self, **params):
-        self.data.append(params)
+    def save_storage(self, data):
+        self.data = data
 
-    def remove(self, **params):
-        self.data.remove(params)

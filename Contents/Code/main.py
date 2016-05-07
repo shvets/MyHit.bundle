@@ -351,38 +351,6 @@ def HandleHistory():
 
     return oc
 
-@route(constants.PREFIX + '/queue')
-def HandleQueue():
-    oc = ObjectContainer(title2=unicode(L('Queue')))
-
-    for item in service.queue.data:
-        if 'episode' in item:
-            oc.add(DirectoryObject(
-                key=Callback(HandleMovie, **item),
-                title=util.sanitize(item['name']),
-                thumb=item['thumb']
-            ))
-        elif 'season' in item:
-            oc.add(DirectoryObject(
-                key=Callback(HandleSeasons, **item),
-                title=util.sanitize(item['name']),
-                thumb=item['thumb']
-            ))
-        elif 'audio' in item:
-            oc.add(DirectoryObject(
-                key=Callback(HandleSoundtrack, **item),
-                title=util.sanitize(item['name']),
-                thumb=item['thumb']
-            ))
-        else:
-            oc.add(DirectoryObject(
-                key=Callback(HandleContainer, **item),
-                title=util.sanitize(item['name']),
-                thumb=item['thumb']
-            ))
-
-    return oc
-
 @route(constants.PREFIX + '/audio_track')
 def GetAudioTrack(path, name, artist, format, bitrate, duration, container=False):
     if 'm4a' in format:

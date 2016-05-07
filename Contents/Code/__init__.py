@@ -8,6 +8,7 @@ from plex_service import PlexService
 service = PlexService()
 
 import main
+import queue_routes
 
 def Start():
     Plugin.AddViewGroup("InfoList", viewMode="InfoList", mediaType="items")
@@ -36,7 +37,7 @@ def MainMenu():
     oc.add(DirectoryObject(key=Callback(main.HandleSoundtracks), title=unicode(L('Soundtracks'))))
     oc.add(DirectoryObject(key=Callback(main.HandleSelections), title=unicode(L('Selections'))))
     oc.add(DirectoryObject(key=Callback(main.HandleHistory), title=unicode(L('History'))))
-    oc.add(DirectoryObject(key=Callback(main.HandleQueue), title=unicode(L('Queue'))))
+    oc.add(DirectoryObject(key=Callback(queue_routes.HandleQueue), title=unicode(L('Queue'))))
 
     oc.add(InputDirectoryObject(
         key=Callback(main.HandleSearch),
