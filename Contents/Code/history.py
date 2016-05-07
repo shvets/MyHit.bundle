@@ -1,26 +1,27 @@
 KEY_HISTORY = 'history'
 HISTORY_SIZE = 60
 
-def push_to_history(**params):
+def push_to_history(item):
     history = Data.LoadObject(KEY_HISTORY)
 
     if not history:
         history = {}
 
-    path = params['path']
+    path = item['path']
 
     history[path] = {
-        'path': params['path'],
-        'name': params['name'],
-        'thumb': params['thumb'],
+        'type': item.type,
+        'path': item['path'],
+        'name': item['name'],
+        'thumb': item['thumb'],
         'time': Datetime.TimestampFromDatetime(Datetime.Now())
     }
 
-    if 'season' in params:
-        history[path]['season'] = params['season']
+    if 'season' in item:
+        history[path]['season'] = item['season']
 
-    if 'episode' in params:
-        history[path]['episode'] = params['episode']
+    if 'episode' in item:
+        history[path]['episode'] = item['episode']
 
     # Trim old items
     if len(history) > HISTORY_SIZE:
@@ -32,8 +33,8 @@ def push_to_history(**params):
 
         history = {}
 
-        for item in items:
-            history[item['path']] = item
+        for it in items:
+            history[it['path']] = it
 
     Data.SaveObject(KEY_HISTORY, history)
 

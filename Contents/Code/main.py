@@ -63,7 +63,7 @@ def HandleMovie(type, path, name, thumb, parentName=None, season=None, episode=N
 
     url_items = service.get_urls_metadata(urls)
 
-    media_info = MediaInfo(path=path, name=name, thumb=thumb, season=season, episode=episode)
+    media_info = MediaInfo(type=type, path=path, name=name, thumb=thumb, season=season, episode=episode)
 
     if operation == 'add':
         service.queue.add(media_info)
@@ -73,7 +73,7 @@ def HandleMovie(type, path, name, thumb, parentName=None, season=None, episode=N
     oc.add(MetadataObjectForURL(media_type="movie", url_items=url_items, player=PlayVideo, media_info=media_info, parentName=parentName))
 
     if str(container) == 'False':
-        history.push_to_history(parentName=parentName, **media_info)
+        history.push_to_history(media_info)
         service.queue.append_controls(oc, HandleMovie, media_info)
 
     return oc
@@ -179,7 +179,9 @@ def HandleEpisodes(path, name, thumb, season, episodes, operation=None, containe
             thumb=thumb
         ))
 
-    service.queue.append_controls(oc, HandleEpisodes, path=path, name=name, thumb=thumb, episodes=episodes, season=season)
+    media_info = MediaInfo(type=MediaInfo.EPISODE, path=path, name=name, thumb=thumb, season=season)
+
+    service.queue.append_controls(oc, HandleEpisodes, media_item=media_info, episodes=episodes)
 
     return oc
 
@@ -195,7 +197,7 @@ def HandleSoundtracks(page=1):
         thumb = item['thumb']
 
         oc.add(DirectoryObject(
-            key=Callback(HandleSoundtrack, path=path, name=name, thumb=thumb),
+            key=Callback(HandleSoundtrack, type=MediaInfo.AUDIO, path=path, name=name, thumb=thumb),
             title=util.sanitize(name),
             thumb=thumb
         ))
@@ -205,10 +207,10 @@ def HandleSoundtracks(page=1):
     return oc
 
 @route(constants.PREFIX + '/soundtrack')
-def HandleSoundtrack(path, name, thumb, audio=True, operation=None, container=False):
+def HandleSoundtrack(type, path, name, thumb, operation=None, container=False):
     oc = ObjectContainer(title2=unicode(name))
 
-    media_info = MediaInfo(type=MediaInfo.AUDIO, path=path, name=name, thumb=thumb)
+    media_info = MediaInfo(type=type, path=path, name=name, thumb=thumb)
 
     if operation == 'add':
         service.queue.add(media_info)
@@ -234,7 +236,7 @@ def HandleSoundtrack(path, name, thumb, audio=True, operation=None, container=Fa
         ))
 
     if str(container) == 'False':
-        history.push_to_history(path=path, name=name, thumb=thumb)
+        history.push_to_history(media_info)
         service.queue.append_controls(oc, HandleSoundtrack, media_info)
 
     return oc
@@ -308,9 +310,14 @@ def HandleSelection(path, name, thumb, page=1, operation=None):
 
 @route(constants.PREFIX + '/container')
 def HandleContainer(type, path, parentName, name, thumb=None):
-    if service.is_single_movie(path):
+    Log(type)
+    Log(path)
+
+    if type == MediaInfo.VIDEO or type == MediaInfo.EPISODE:
         return HandleMovie(type=type, path=path, name=name, thumb=thumb)
-    else:
+    elif type == MediaInfo.AUDIO:
+        return HandleSoundtrack(type=type, path=path, name=name, thumb=thumb)
+    elif type == MediaInfo.SEASON:
         return HandleSeasons(path=path, parentName=parentName, name=name, thumb=thumb)
 
 @route(constants.PREFIX + '/search')
@@ -342,6 +349,7 @@ def HandleHistory():
 
     if history_object:
         for item in sorted(history_object.values(), key=lambda k: k['time'], reverse=True):
+            type = item['type']
             path = item['path']
             name = item['name']
 

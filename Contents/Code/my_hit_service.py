@@ -209,7 +209,9 @@ class MyHitService(HttpService):
         return {"movies": list, "pagination": pagination["pagination"]}
 
     def get_serie_info(self, path):
+        Log(path)
         serie_info = self.to_json(self.fetch_content(self.URL + path + "/playlist.txt"))['playlist']
+        Log(serie_info)
 
         if len(serie_info) > 0 and 'playlist' not in serie_info[0]:
             serie_info = [{
