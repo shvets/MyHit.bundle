@@ -22,7 +22,7 @@ def HandleAllMovies(page=1):
         thumb = item['thumb']
 
         oc.add(DirectoryObject(
-            key=Callback(HandleMovie, type=type, path=path, name=name, thumb=thumb),
+            key=Callback(HandleMovie, type='video', path=path, name=name, thumb=thumb),
             title=util.sanitize(name),
             thumb=thumb
         ))
@@ -43,7 +43,7 @@ def HandlePopularMovies(page=1):
         thumb = item['thumb']
 
         oc.add(DirectoryObject(
-            key=Callback(HandleMovie, type=type, path=path, name=name, thumb=thumb),
+            key=Callback(HandleMovie, type='video', path=path, name=name, thumb=thumb),
             title=util.sanitize(name),
             thumb=thumb
         ))
@@ -305,16 +305,13 @@ def HandleSelection(type, path, name, thumb, page=1, operation=None):
     return oc
 
 @route(constants.PREFIX + '/container')
-def HandleContainer(type, path, parentName, name, thumb=None):
-    Log(type)
-    Log(path)
-
+def HandleContainer(type, path, name, thumb=None):
     if type == MediaInfo.VIDEO or type == MediaInfo.EPISODE:
         return HandleMovie(type=type, path=path, name=name, thumb=thumb)
     elif type == MediaInfo.AUDIO:
         return HandleSoundtrack(type=type, path=path, name=name, thumb=thumb)
     elif type == MediaInfo.SEASON:
-        return HandleSeasons(path=path, parentName=parentName, name=name, thumb=thumb)
+        return HandleSeasons(path=path, name=name, thumb=thumb)
 
 @route(constants.PREFIX + '/search')
 def HandleSearch(query=None, page=1):
@@ -328,7 +325,7 @@ def HandleSearch(query=None, page=1):
         path = movie['path']
 
         oc.add(DirectoryObject(
-            key=Callback(HandleContainer, type=type, path=path, parentName=name, name=name, thumb=thumb),
+            key=Callback(HandleContainer, type=type, path=path, name=name, thumb=thumb),
             title=unicode(name),
             thumb=thumb
         ))
@@ -355,7 +352,7 @@ def HandleHistory():
                 thumb = None
 
             oc.add(DirectoryObject(
-                key=Callback(HandleContainer, type=type, path=path, parentName=name, name=name, thumb=thumb),
+                key=Callback(HandleContainer, type=type, path=path, name=name, thumb=thumb),
                 title=unicode(name),
                 thumb=thumb
             ))
