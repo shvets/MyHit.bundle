@@ -55,12 +55,11 @@ def HandlePopularMovies(page=1):
 def HandleMovie(path, name, thumb, parentName=None, season=None, episode=None, operation=None, container=False):
     oc = ObjectContainer(title2=unicode(L(name)))
 
-    if path.find('http://') >= 0:
-        source_url = path
+    if season and int(season) > 0:
+        urls = service.get_urls(url=path)
     else:
-        source_url = service.get_source_url(path)
+        urls = service.get_urls(path=path)
 
-    urls = service.get_urls(source_url)
     url_items = service.get_urls_metadata(urls)
 
     if operation == 'add':
@@ -69,7 +68,7 @@ def HandleMovie(path, name, thumb, parentName=None, season=None, episode=None, o
         service.queue.remove_bookmark(path=path, name=name, thumb=thumb, season=season, episode=episode)
 
     oc.add(MetadataObjectForURL(media_type="movie", path=path, name=name, thumb=thumb,
-                                url_items=url_items, player=PlayVideo, parentName=parentName))
+                                url_items=url_items, player=PlayVideo, season=season, episode=episode, parentName=parentName))
 
     if str(container) == 'False':
         history.push_to_history(path=path, name=name, thumb=thumb, parentName=parentName, season=season, episode=episode)
@@ -262,7 +261,7 @@ def HandleSelections(page=1):
         id = item['id']
         thumb = item['thumb']
 
-        if name != "Актёры и актрисы":
+        if name != "Актёры и актрисы" and name != "Актеры и актрисы":
             oc.add(DirectoryObject(
                 key=Callback(HandleSelection, id=id, name=name),
                 title=util.sanitize(name),
@@ -411,10 +410,11 @@ def GetAudioTrack(path, name, artist, format, bitrate, duration, container=False
     else:
         return track
 
-def MetadataObjectForURL(media_type, path, name, thumb, url_items, player, parentName=None):
+def MetadataObjectForURL(media_type, path, name, thumb, url_items, player, season=None, episode=None, parentName=None):
     metadata_object = builder.build_metadata_object(media_type=media_type, title=name)
 
-    metadata_object.key = Callback(HandleMovie, path=path, name=name, thumb=thumb, parentName=parentName, container=True)
+    metadata_object.key = Callback(HandleMovie, path=path, name=name, thumb=thumb, parentName=parentName,
+                                   season=season, episode=episode, container=True)
 
     # metadata_object.rating_key = 'rating_key'
     metadata_object.rating_key = unicode(name)

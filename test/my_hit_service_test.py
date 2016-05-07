@@ -28,7 +28,7 @@ class MyHitServiceTest(unittest.TestCase):
 
         print serie
 
-        result = self.service.get_serie_data(serie['path'])
+        result = self.service.get_serie_info(serie['path'])
 
         print(json.dumps(result, indent=4))
 
@@ -153,7 +153,7 @@ class MyHitServiceTest(unittest.TestCase):
 
         print(json.dumps(urls, indent=4))
 
-        print self.service.http_request(urls[0]).read()
+        # print self.service.http_request(urls[0]).read()
 
         # play_list = self.service.get_play_list3(urls[0])
         #

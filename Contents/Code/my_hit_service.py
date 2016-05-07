@@ -262,12 +262,22 @@ class MyHitService(HttpService):
 
         return script[index1 + 6:index2] + ".f4m"
 
-    def get_urls(self, url):
-        new_url = url.replace('.f4m', '.m3u8')
+    def get_urls(self, path=None, url=None):
+        if not path and not url:
+            print("Missing path or url")
 
-        urls = self.get_play_list_urls(new_url)
+            return []
+        else:
+            if path:
+                source_url = self.get_source_url(self.URL + path)
+            else:
+                source_url = url
 
-        return reversed(urls)
+        new_url = source_url.replace('.f4m', '.m3u8')
+
+        urls = self.get_play_list_urls( new_url)
+
+        return list(reversed(urls))
 
     def get_urls_metadata(self, urls):
         urls_items = []
