@@ -56,7 +56,7 @@ def HandlePopularMovies(page=1):
 def HandleMovie(type, path, name, thumb, parentName=None, season=None, episode=None, operation=None, container=False):
     oc = ObjectContainer(title2=unicode(L(name)))
 
-    if season and int(season) > 0:
+    if season and int(season) > 0 and episode:
         urls = service.get_urls(url=path)
     else:
         urls = service.get_urls(path=path)
@@ -140,11 +140,11 @@ def HandleSeasons(path, name, thumb, operation=None):
         rating_key = service.get_episode_url(path, season, 0)
 
         oc.add(SeasonObject(
-            key=Callback(HandleEpisodes, season=season, episodes=json.dumps(episodes), **media_info),
+            key=Callback(HandleEpisodes, type=MediaInfo.EPISODE, path=path, name=name, thumb=thumb, season=season, episodes=json.dumps(episodes)),
             rating_key=rating_key,
             title=util.sanitize(season_name),
             index=int(season),
-            thumb=thumb
+            thumb='thumb'
         ))
 
     service.queue.append_controls(oc, HandleSeasons, media_info)
@@ -152,7 +152,7 @@ def HandleSeasons(path, name, thumb, operation=None):
     return oc
 
 @route(constants.PREFIX + '/episodes', container=bool)
-def HandleEpisodes(path, name, thumb, season, episodes, operation=None, container=False):
+def HandleEpisodes(type, path, name, thumb, season, episodes, operation=None, container=False):
     oc = ObjectContainer(title2=unicode(name))
 
     # if operation == 'add':
@@ -168,20 +168,20 @@ def HandleEpisodes(path, name, thumb, season, episodes, operation=None, containe
         thumb = episode['poster']
         url = episode['file']
 
-        #Log(url)
+        Log(url)
 
-        key = Callback(HandleMovie,type='episode', path=url, name=episode_name,
+        key = Callback(HandleMovie, type=MediaInfo.EPISODE, path=url, name=episode_name,
                        thumb=thumb, season=season, episode=episode, container=container)
 
         oc.add(DirectoryObject(
             key=key,
             title=unicode(episode_name),
-            thumb=thumb
+            thumb=service.URL + thumb
         ))
 
-    media_info = MediaInfo(type=MediaInfo.EPISODE, path=path, name=name, thumb=thumb, season=season)
+    media_info = MediaInfo(type=type, path=path, name=name, thumb=thumb, season=season, episodes=episodes)
 
-    service.queue.append_controls(oc, HandleEpisodes, media_item=media_info, episodes=episodes)
+    service.queue.append_controls(oc, HandleEpisodes, media_info)
 
     return oc
 
@@ -392,12 +392,12 @@ def GetAudioTrack(path, name, artist, format, bitrate, duration, container=False
     else:
         return track
 
-def MetadataObjectForURL(media_type, url_items, player, media_info, season=None, episode=None, parentName=None):
+def MetadataObjectForURL(media_type, url_items, player, media_info, parentName=None):
     metadata_object = builder.build_metadata_object(media_type=media_type, title=media_info['name'])
 
     metadata_object.key = Callback(HandleMovie, type=media_info['type'], path=media_info['path'], name=media_info['name'],
                                    thumb=media_info['thumb'], parentName=parentName,
-                                   season=season, episode=episode, container=True)
+                                   season=media_info['season'], episode=media_info['episode'], container=True)
 
     # metadata_object.rating_key = 'rating_key'
     metadata_object.rating_key = unicode(media_info['name'])
