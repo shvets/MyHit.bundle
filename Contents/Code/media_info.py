@@ -1,14 +1,19 @@
 class MediaInfo(dict):
+    SIMPLE = 'simple'
     SEASON = 'season'
     EPISODE = 'episode'
-    TRACK = 'audio'
-    SELECTION = 'selection'
-    MOVIE = 'selection'
 
-    def __init__(self, type, **params):
+    def __init__(self, type=SIMPLE, **params):
         super(MediaInfo, self).__init__()
 
         self['type'] = type
 
         for key, value in params.iteritems():
             self[key] = value
+
+    def type(self):
+        return self['type']
+
+    def value(self, name):
+        if name  in self:
+            return self[name]

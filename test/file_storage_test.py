@@ -13,6 +13,7 @@ class FileStorageTest(unittest.TestCase):
     def setUp(self):
         self.subject = FileStorage('test_storage.json')
 
+    def tearDown(self):
         if os.path.exists(self.subject.file_name):
             os.remove(self.subject.file_name)
 
