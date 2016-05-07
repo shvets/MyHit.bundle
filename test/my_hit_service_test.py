@@ -37,8 +37,8 @@ class MyHitServiceTest(unittest.TestCase):
 
         print(json.dumps(result, indent=4))
 
-    def test_get_popular_serials(self):
-        result = self.service.get_popular_serials()
+    def test_get_popular_series(self):
+        result = self.service.get_popular_series()
 
         print(json.dumps(result, indent=4))
 
@@ -78,6 +78,15 @@ class MyHitServiceTest(unittest.TestCase):
         print(json.dumps(movie, indent=4))
 
         result = self.service.get_urls(movie['path'])
+
+        print(json.dumps(result, indent=4))
+
+    def test_get_serie_info(self):
+        series = self.service.get_popular_series()['movies']
+
+        serie = series[0]
+
+        result = self.service.get_serie_info(serie['path'])
 
         print(json.dumps(result, indent=4))
 

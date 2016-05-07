@@ -31,13 +31,13 @@ class MyHitService(HttpService):
     def get_popular_movies(self, page=1):
         return self.get_movies("/film/?s=3", page=page)
 
-    def get_popular_serials(self, page=1):
+    def get_popular_series(self, page=1):
         return self.get_series("/serial/?s=3", page=page)
 
     # def get_selected_movies(self, page=1):
     #     return self.get_movies("/selection/film", page=page)
     #
-    # def get_selected_serials(self, page=1):
+    # def get_selected_series(self, page=1):
     #     return self.get_movies("/selection/serial", page=page)
 
     def get_movies(self, path, page=1):
@@ -85,30 +85,6 @@ class MyHitService(HttpService):
         pagination = self.extract_pagination_data(page_path, page=page)
 
         return {"movies": list, "pagination": pagination["pagination"]}
-
-    def get_serie_data(self, path):
-        list = []
-
-        document = self.fetch_document(self.URL + path)
-
-        items = document.xpath('//div[@class="serial-list"]/div[@class="row"]')
-
-        for item in items:
-            pass
-        #     link = item.xpath('div/a')[0]
-        #
-        #     href = link.xpath('@href')[0]
-        #     name = link.get("title")
-        #     name = name[:len(name) - 18]
-        #     thumb = self.URL + link.xpath('div/img/@src')[0]
-        #
-        #     list.append({'path': href, 'thumb': thumb, 'name': name})
-        #
-        # pagination = self.extract_pagination_data(page_path, page=page)
-        #
-        # return {"movies": list, "pagination": pagination["pagination"]}
-
-        return list
 
     def get_soundtracks(self, page=1):
         list = []
@@ -230,6 +206,29 @@ class MyHitService(HttpService):
         pagination = self.extract_pagination_data(page_path, page=page)
 
         return {"movies": list, "pagination": pagination["pagination"]}
+
+    def get_serie_info(self, path):
+        return self.to_json(self.fetch_content(self.URL + path + "/playlist.txt"))['playlist']
+
+    # def get_serial_info(self, document):
+    #     ret = {}
+    #
+    #     ret['seasons'] = {}
+    #     ret['episodes'] = {}
+    #
+    #     for item in document.xpath('//select[@id="season"]/option'):
+    #         value = int(item.get('value'))
+    #         ret['seasons'][value] = unicode(item.text_content())
+    #         if item.get('selected'):
+    #             ret['current_season'] = int(value)
+    #
+    #     for item in document.xpath('//select[@id="episode"]/option'):
+    #         value = int(item.get('value'))
+    #         ret['episodes'][value] = unicode(item.text_content())
+    #         if item.get('selected'):
+    #             ret['current_episode'] = int(value)
+    #
+    #     return ret
 
     def search(self, query, page=1):
         path = self.build_url("/search/", q=str(query), p=str(page))
