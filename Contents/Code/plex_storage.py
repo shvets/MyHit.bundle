@@ -1,10 +1,10 @@
 import json
 
-from bookmark_storage import BookmarkStorage
+from media_info_storage import MediaInfoStorage
 
-class PlexStorage(BookmarkStorage):
+class PlexStorage(MediaInfoStorage):
     def __init__(self, storage, file_name):
-        BookmarkStorage.__init__(self, file_name)
+        MediaInfoStorage.__init__(self, file_name)
 
         self.storage = storage
 
@@ -14,7 +14,7 @@ class PlexStorage(BookmarkStorage):
         return self.storage.file_exists(self.file_name)
 
     def load_storage(self):
-        return json.loads(self.storage.load(self.file_name))
+        return self.dict_to_media_info(json.loads(self.storage.load(self.file_name)))
 
     def save_storage(self, data):
-        self.storage.save(self.file_name, json.dumps(self.data, indent=4))
+        self.storage.save(self.file_name, json.dumps(self.media_info_to_dict(self.data), indent=4))

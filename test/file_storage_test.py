@@ -32,7 +32,7 @@ class FileStorageTest(unittest.TestCase):
         os.remove(self.subject.file_name)
 
     def test_load(self):
-        data = [MediaInfo('video'), MediaInfo('video')]
+        data = [MediaInfo(), MediaInfo()]
         open(self.subject.file_name, "w").write(json.dumps(data))
 
         self.subject.load()
@@ -42,8 +42,8 @@ class FileStorageTest(unittest.TestCase):
         os.remove(self.subject.file_name)
 
     def test_save(self):
-        self.subject.add(MediaInfo('video'))
-        self.subject.add(MediaInfo('video'))
+        self.subject.add(MediaInfo())
+        self.subject.add(MediaInfo())
 
         self.subject.save()
 

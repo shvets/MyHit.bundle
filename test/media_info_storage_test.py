@@ -5,24 +5,18 @@ import test_helper
 import unittest
 
 import os
-from bookmark_storage import BookmarkStorage
+import json
+from media_info_storage import MediaInfoStorage
 from storage import Storage
 from media_info import MediaInfo
 
-class BookmarkStorageTest(unittest.TestCase):
+class MediaInfoStorageTest(unittest.TestCase):
     def setUp(self):
-        self.subject = BookmarkStorage('test_storage.json')
+        self.subject = MediaInfoStorage('test_storage.json')
 
     def tearDown(self):
         if os.path.exists(self.subject.file_name):
             os.remove(self.subject.file_name)
-    #
-    # def test_sanitize(self):
-    #     item = MediaInfo(season=None)
-    #
-    #     new_item = self.subject.sanitize(item)
-    #
-    #     self.assertEqual('season' in new_item, False)
 
     def test_find_video(self):
         Storage.add(self.subject, MediaInfo('video', path='path1'))
@@ -98,6 +92,26 @@ class BookmarkStorageTest(unittest.TestCase):
         self.subject.remove(item)
 
         self.assertEqual(len(self.subject.items()), 0)
+
+    def test_load(self):
+        self.subject.add(MediaInfo(path='path1'))
+        self.subject.add(MediaInfo(path='path2'))
+
+        self.subject.save()
+
+        self.subject.load()
+
+        self.assertEqual(len(self.subject.items()), 2)
+
+        os.remove(self.subject.file_name)
+
+    def test_save(self):
+        self.subject.add(MediaInfo(path='path1'))
+        self.subject.add(MediaInfo(path='path2'))
+
+        self.subject.save()
+
+        self.assertEqual(len(self.subject.items()), 2)
 
 if __name__ == '__main__':
     unittest.main()

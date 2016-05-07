@@ -8,9 +8,7 @@ class MyHitStorage(PlexStorage):
         self.load()
 
     def append_controls(self, oc, handler, item):
-        Log(item)
         bookmark = self.find(item)
-        Log(bookmark)
 
         if bookmark:
             oc.add(DirectoryObject(
