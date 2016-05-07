@@ -10,7 +10,7 @@ def push_to_history(item):
     path = item['path']
 
     history[path] = {
-        'type': item.type,
+        'type': item['type'],
         'path': item['path'],
         'name': item['name'],
         'thumb': item['thumb'],

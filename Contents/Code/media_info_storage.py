@@ -1,5 +1,3 @@
-import copy
-
 from storage import Storage
 from file_storage import FileStorage
 from media_info import MediaInfo
@@ -14,10 +12,10 @@ class MediaInfoStorage(FileStorage):
         found = None
 
         for item in self.data:
-            mode = search_item.type
+            mode = search_item['type']
 
             if item['path'] == search_item['path']:
-                if mode == MediaInfo.VIDEO or mode == MediaInfo.AUDIO:
+                if mode == MediaInfo.VIDEO or mode == MediaInfo.AUDIO or mode == MediaInfo.SELECTION:
                     if not 'season' in item:
                         found = item
                     break
@@ -56,31 +54,8 @@ class MediaInfoStorage(FileStorage):
             self.save()
 
     def load_storage(self):
-        data = FileStorage.load_storage(self)
-
-        return self.dict_to_media_info(data)
+        return FileStorage.load_storage(self)
 
     def save_storage(self, data):
-        FileStorage.save_storage(self, self.media_info_to_dict(data))
+        FileStorage.save_storage(self, data)
 
-    def dict_to_media_info(self, data):
-        new_data = []
-
-        for item in data:
-            new_item = copy.copy(item)
-
-            type = new_item['type']
-
-            del new_item['type']
-
-            new_data.append(MediaInfo(type=type, **new_item))
-
-        return new_data
-
-    def media_info_to_dict(self, data):
-        new_data = copy.copy(data)
-
-        for item in new_data:
-            item['type'] = item.type
-
-        return new_data

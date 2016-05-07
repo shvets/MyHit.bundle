@@ -17,6 +17,8 @@ class Storage():
         self.data.append(item)
 
     def remove(self, item):
+        self.sanitize(item)
+
         self.data.remove(item)
 
     def load(self):

@@ -270,7 +270,7 @@ def HandleSelections(page=1):
 
         if name != "Актёры и актрисы" and name != "Актеры и актрисы":
             oc.add(DirectoryObject(
-                key=Callback(HandleSelection, path=path, name=name, thumb=thumb),
+                key=Callback(HandleSelection, type=MediaInfo.SELECTION, path=path, name=name, thumb=thumb),
                 title=util.sanitize(name),
                 thumb=thumb
             ))
@@ -280,10 +280,10 @@ def HandleSelections(page=1):
     return oc
 
 @route(constants.PREFIX + '/selection')
-def HandleSelection(path, name, thumb, page=1, operation=None):
+def HandleSelection(type, path, name, thumb, page=1, operation=None):
     oc = ObjectContainer(title2=unicode(name))
 
-    media_info = MediaInfo(type=MediaInfo.SELECTION, path=path, name=name, thumb=thumb)
+    media_info = MediaInfo(type=type, path=path, name=name, thumb=thumb)
 
     if operation == 'add':
         service.queue.add(media_info)
@@ -293,18 +293,14 @@ def HandleSelection(path, name, thumb, page=1, operation=None):
     response = service.get_selection(path, page=page)
 
     for item in response['movies']:
-        name = item['name']
-        path = item['path']
-        thumb = item['thumb']
-
         oc.add(DirectoryObject(
-            key=Callback(HandleMovie, **media_info),
-            title=util.sanitize(name),
-            thumb=thumb
+            key=Callback(HandleMovie, type="video", path=item['path'], name=item['name'], thumb=item['thumb']),
+            title=util.sanitize(item['name']),
+            thumb=item['thumb']
         ))
 
     service.queue.append_controls(oc, HandleSelection, media_info)
-    pagination.append_controls(oc, response, callback=HandleSelection, **media_info)
+    pagination.append_controls(oc, response, page=page, callback=HandleSelection, **media_info)
 
     return oc
 
@@ -402,7 +398,7 @@ def GetAudioTrack(path, name, artist, format, bitrate, duration, container=False
 def MetadataObjectForURL(media_type, url_items, player, media_info, season=None, episode=None, parentName=None):
     metadata_object = builder.build_metadata_object(media_type=media_type, title=media_info['name'])
 
-    metadata_object.key = Callback(HandleMovie, type=media_info.type, path=media_info['path'], name=media_info['name'],
+    metadata_object.key = Callback(HandleMovie, type=media_info['type'], path=media_info['path'], name=media_info['name'],
                                    thumb=media_info['thumb'], parentName=parentName,
                                    season=season, episode=episode, container=True)
 

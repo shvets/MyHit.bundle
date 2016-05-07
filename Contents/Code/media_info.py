@@ -8,7 +8,7 @@ class MediaInfo(dict):
     def __init__(self, type=VIDEO, **params):
         super(MediaInfo, self).__init__()
 
-        self.type = type
+        self['type'] = type
 
         for key, value in params.iteritems():
             self[key] = value

@@ -14,7 +14,7 @@ class PlexStorage(MediaInfoStorage):
         return self.storage.file_exists(self.file_name)
 
     def load_storage(self):
-        return self.dict_to_media_info(json.loads(self.storage.load(self.file_name)))
+        return json.loads(self.storage.load(self.file_name))
 
     def save_storage(self, data):
-        self.storage.save(self.file_name, json.dumps(self.media_info_to_dict(self.data), indent=4))
+        self.storage.save(self.file_name, json.dumps(self.data, indent=4))
