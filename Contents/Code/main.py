@@ -22,7 +22,7 @@ def HandleAllMovies(page=1):
         thumb = item['thumb']
 
         oc.add(DirectoryObject(
-            key=Callback(HandleMovie, type='video', path=path, name=name, thumb=thumb),
+            key=Callback(HandleMovie, type=MediaInfo.VIDEO, path=path, name=name, thumb=thumb),
             title=util.sanitize(name),
             thumb=thumb
         ))
@@ -43,7 +43,7 @@ def HandlePopularMovies(page=1):
         thumb = item['thumb']
 
         oc.add(DirectoryObject(
-            key=Callback(HandleMovie, type='video', path=path, name=name, thumb=thumb),
+            key=Callback(HandleMovie, type=MediaInfo.VIDEO, path=path, name=name, thumb=thumb),
             title=util.sanitize(name),
             thumb=thumb
         ))
@@ -70,7 +70,8 @@ def HandleMovie(type, path, name, thumb, parentName=None, season=None, episode=N
     elif operation == 'remove':
         service.queue.remove(media_info)
 
-    oc.add(MetadataObjectForURL(media_type="movie", url_items=url_items, player=PlayVideo, media_info=media_info, parentName=parentName))
+    oc.add(MetadataObjectForURL(media_type="movie", url_items=url_items, player=PlayVideo, media_info=media_info,
+                                parentName=parentName))
 
     if str(container) == 'False':
         history.push_to_history(media_info)
@@ -90,7 +91,7 @@ def HandleAllSeries(page=1):
         thumb = item['thumb']
 
         oc.add(DirectoryObject(
-            key=Callback(HandleSeasons, type=MediaInfo.SERIE, path=path, name=name, thumb=thumb),
+            key=Callback(HandleSerie, type=MediaInfo.SERIE, path=path, name=name, thumb=thumb),
             title=util.sanitize(name),
             thumb=thumb
         ))
@@ -111,7 +112,7 @@ def HandlePopularSeries(page=1):
         thumb = item['thumb']
 
         oc.add(DirectoryObject(
-            key=Callback(HandleSeasons, type=MediaInfo.SERIE, path=path, name=name, thumb=thumb),
+            key=Callback(HandleSerie, type=MediaInfo.SERIE, path=path, name=name, thumb=thumb),
             title=util.sanitize(name),
             thumb=thumb
         ))
@@ -120,8 +121,8 @@ def HandlePopularSeries(page=1):
 
     return oc
 
-@route(constants.PREFIX + '/seasons')
-def HandleSeasons(type, path, name, thumb, operation=None):
+@route(constants.PREFIX + '/serie')
+def HandleSerie(type, path, name, thumb, operation=None):
     oc = ObjectContainer(title2=unicode(name))
 
     media_info = MediaInfo(type=type, path=path, name=name, thumb=thumb)
@@ -140,19 +141,20 @@ def HandleSeasons(type, path, name, thumb, operation=None):
         rating_key = service.get_episode_url(path, season, 0)
 
         oc.add(SeasonObject(
-            key=Callback(HandleEpisodes, type=MediaInfo.SEASON, path=path, name=name, thumb=thumb, season=season, episodes=json.dumps(episodes)),
+            key=Callback(HandleSeason, type=MediaInfo.SEASON, path=path, name=name, thumb=thumb, season=season,
+                         episodes=json.dumps(episodes)),
             rating_key=rating_key,
             title=util.sanitize(season_name),
             index=int(season),
             thumb='thumb'
         ))
 
-    service.queue.append_controls(oc, HandleSeasons, media_info)
+    service.queue.append_controls(oc, HandleSerie, media_info)
 
     return oc
 
-@route(constants.PREFIX + '/episodes', container=bool)
-def HandleEpisodes(type, path, name, thumb, season, episodes, operation=None, container=False):
+@route(constants.PREFIX + '/season', container=bool)
+def HandleSeason(type, path, name, thumb, season, episodes=None, operation=None, container=False):
     oc = ObjectContainer(title2=unicode(name))
 
     media_info = MediaInfo(type=type, path=path, name=name, thumb=thumb, season=season)
@@ -162,27 +164,39 @@ def HandleEpisodes(type, path, name, thumb, season, episodes, operation=None, co
     elif operation == 'remove':
         service.queue.remove(media_info)
 
-    for episode in json.loads(episodes):
+    if not episodes:
+        serie_info = service.get_serie_info(path)
+        episodes = serie_info[int(season)-1]['playlist']
+    else:
+        Log(episodes)
+        episodes = json.loads(episodes)
+
+    for episode in episodes:
         episode_name = episode['comment']
-        thumb = episode['poster']
+        thumb = service.URL + episode['poster']
         url = episode['file']
 
-        key = Callback(HandleMovie, type=MediaInfo.EPISODE, path=url, name=episode_name,
+        key = Callback(HandleEpisode, type=MediaInfo.VIDEO, path=url, name=episode_name, parentName=name,
                        thumb=thumb, season=season, episode=episode, container=container)
 
         oc.add(DirectoryObject(
             key=key,
             title=unicode(episode_name),
-            thumb=service.URL + thumb
+            thumb=thumb
         ))
 
     media_info = MediaInfo(type=type, path=path, name=name, thumb=thumb, season=season, episodes=episodes)
 
     if str(container) == 'False':
         history.push_to_history(media_info)
-        service.queue.append_controls(oc, HandleEpisodes, media_info)
+        service.queue.append_controls(oc, HandleSeason, media_info)
 
     return oc
+
+@route(constants.PREFIX + '/episode')
+def HandleEpisode(type, path, name, thumb, parentName=None, season=None, episode=None, operation=None, container=False):
+    return HandleMovie(type=type, path=path, name=name, thumb=thumb, parentName=parentName, season=season,
+                       episode=episode, operation=operation, container=container)
 
 @route(constants.PREFIX + '/soundtracks')
 def HandleSoundtracks(page=1):
@@ -305,12 +319,71 @@ def HandleSelection(type, path, name, thumb, page=1, operation=None):
 
 @route(constants.PREFIX + '/container')
 def HandleContainer(type, path, name, thumb=None):
-    if type == MediaInfo.VIDEO or type == MediaInfo.EPISODE:
+    if type == MediaInfo.VIDEO:
         return HandleMovie(type=type, path=path, name=name, thumb=thumb)
+    elif type == MediaInfo.EPISODE:
+        return HandleEpisode(type=type, path=path, name=name, thumb=thumb)
+    elif type == MediaInfo.SEASON:
+        return HandleSeason(type=type, path=path, name=name, thumb=thumb)
+    elif type == MediaInfo.SERIE:
+        return HandleSerie(type=type, path=path, name=name, thumb=thumb)
     elif type == MediaInfo.AUDIO:
         return HandleSoundtrack(type=type, path=path, name=name, thumb=thumb)
-    elif type == MediaInfo.SEASON:
-        return HandleSeasons(type=type, path=path, name=name, thumb=thumb)
+    elif type == MediaInfo.SELECTION:
+        return HandleSelection(type=type, path=path, name=name, thumb=thumb)
+
+@route(constants.PREFIX + '/queue')
+def HandleQueue():
+    oc = ObjectContainer(title2=unicode(L('Queue')))
+
+    for media_info in service.queue.data:
+        type = media_info['type']
+
+        if type == MediaInfo.VIDEO:
+            oc.add(DirectoryObject(
+                key=Callback(HandleMovie, **media_info),
+                title=util.sanitize(media_info['name']),
+                thumb=media_info['thumb']
+            ))
+        elif type == MediaInfo.EPISODE:
+            oc.add(DirectoryObject(
+                key=Callback(HandleEpisode, **media_info),
+                title=util.sanitize(media_info['name']),
+                thumb=media_info['thumb']
+            ))
+        elif type== MediaInfo.SEASON:
+            oc.add(DirectoryObject(
+                key=Callback(HandleSeason, **media_info),
+                title=util.sanitize(media_info['name']),
+                thumb=media_info['thumb']
+            ))
+        elif type == MediaInfo.SERIE:
+            oc.add(DirectoryObject(
+                key=Callback(HandleSerie, **media_info),
+                title=util.sanitize(media_info['name']),
+                thumb=media_info['thumb']
+            ))
+        elif type == MediaInfo.AUDIO:
+            oc.add(DirectoryObject(
+                key=Callback(HandleSoundtrack, **media_info),
+                title=util.sanitize(media_info['name']),
+                thumb=media_info['thumb']
+            ))
+
+        elif type == MediaInfo.SELECTION:
+            oc.add(DirectoryObject(
+                key=Callback(HandleSelection, **media_info),
+                title=util.sanitize(media_info['name']),
+                thumb=media_info['thumb']
+            ))
+        else:
+            oc.add(DirectoryObject(
+                key=Callback(HandleContainer, **media_info),
+                title=util.sanitize(media_info['name']),
+                thumb=media_info['thumb']
+            ))
+
+    return oc
 
 @route(constants.PREFIX + '/search')
 def HandleSearch(query=None, page=1):
@@ -396,9 +469,19 @@ def GetAudioTrack(path, name, artist, format, bitrate, duration, container=False
 def MetadataObjectForURL(media_type, url_items, player, media_info, parentName=None):
     metadata_object = builder.build_metadata_object(media_type=media_type, title=media_info['name'])
 
+    if 'season' in media_info:
+        season = media_info['season']
+    else:
+        season = None
+
+    if 'episode' in media_info:
+        episode = media_info['episode']
+    else:
+        episode = None
+
     metadata_object.key = Callback(HandleMovie, type=media_info['type'], path=media_info['path'], name=media_info['name'],
                                    thumb=media_info['thumb'], parentName=parentName,
-                                   season=media_info['season'], episode=media_info['episode'], container=True)
+                                   season=season, episode=episode, container=True)
 
     # metadata_object.rating_key = 'rating_key'
     metadata_object.rating_key = unicode(media_info['name'])

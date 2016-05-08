@@ -15,10 +15,9 @@ class MediaInfoStorage(FileStorage):
             mode = search_item['type']
 
             if item['path'] == search_item['path']:
-                if mode == MediaInfo.VIDEO or mode == MediaInfo.AUDIO or mode == MediaInfo.SELECTION:
-                    if not 'season' in item:
-                        found = item
-                    break
+                if mode == MediaInfo.VIDEO or mode == MediaInfo.AUDIO or \
+                   mode == MediaInfo.SERIE or mode == MediaInfo.SELECTION:
+                    found = item
 
                 elif mode == MediaInfo.SEASON:
                     if 'season' in item:

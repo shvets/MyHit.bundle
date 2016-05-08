@@ -19,8 +19,8 @@ class MediaInfoStorageTest(unittest.TestCase):
             os.remove(self.subject.file_name)
 
     def test_find_video(self):
-        Storage.add(self.subject, MediaInfo('video', path='path1'))
-        Storage.add(self.subject, MediaInfo('video', path='path2'))
+        Storage.add(self.subject, MediaInfo(path='path1'))
+        Storage.add(self.subject, MediaInfo(path='path2'))
 
         search_item = MediaInfo(path='path1')
 
