@@ -131,8 +131,13 @@ class MyHitServiceTest(unittest.TestCase):
 
         print(json.dumps(result, indent=4))
 
-    def test_filters(self):
-        result = self.service.get_filters()
+    def test_film_filters(self):
+        result = self.service.get_filters(mode='film')
+
+        print(json.dumps(result, indent=4))
+
+    def test_serie_filters(self):
+        result = self.service.get_filters(mode='serial')
 
         print(json.dumps(result, indent=4))
 

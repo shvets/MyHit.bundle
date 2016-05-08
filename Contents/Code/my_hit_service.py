@@ -223,7 +223,7 @@ class MyHitService(HttpService):
             if clazz == 'nav-header':
                 current_group = []
 
-                name = item.text_content()
+                name = item.text_content().replace(':', '')
 
                 list.append({name : current_group})
 

@@ -36,6 +36,8 @@ def MainMenu():
     oc.add(DirectoryObject(key=Callback(main.HandlePopularSeries), title=unicode(L('Popular Series'))))
     oc.add(DirectoryObject(key=Callback(main.HandleSoundtracks), title=unicode(L('Soundtracks'))))
     oc.add(DirectoryObject(key=Callback(main.HandleSelections), title=unicode(L('Selections'))))
+    oc.add(DirectoryObject(key=Callback(main.HandleMovieFilters), title=unicode(L('Movie Filters'))))
+    oc.add(DirectoryObject(key=Callback(main.HandleSerieFilters), title=unicode(L('Serie Filters'))))
     oc.add(DirectoryObject(key=Callback(main.HandleHistory), title=unicode(L('History'))))
     oc.add(DirectoryObject(key=Callback(queue_routes.HandleQueue), title=unicode(L('Queue'))))
 
