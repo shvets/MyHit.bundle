@@ -26,8 +26,6 @@ class MyHitServiceTest(unittest.TestCase):
 
         serie = series[0]
 
-        print serie
-
         result = self.service.get_serie_info(serie['path'])
 
         print(json.dumps(result, indent=4))
@@ -130,6 +128,11 @@ class MyHitServiceTest(unittest.TestCase):
         query = 'red'
 
         result = self.service.search(query)
+
+        print(json.dumps(result, indent=4))
+
+    def test_filters(self):
+        result = self.service.get_filters()
 
         print(json.dumps(result, indent=4))
 

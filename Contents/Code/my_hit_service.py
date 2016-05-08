@@ -208,6 +208,46 @@ class MyHitService(HttpService):
 
         return {"movies": list, "pagination": pagination["pagination"]}
 
+    def get_filters(self, mode='film'):
+        list = []
+
+        document = self.fetch_document(self.URL + "/" + mode + "/")
+
+        current_group = None
+
+        items = document.xpath('//div[@class="sidebar-nav"]/ul/li')
+
+        for item in items:
+            clazz = item.get("class")
+
+            if clazz == 'nav-header':
+                current_group = []
+
+                name = item.text_content()
+
+                list.append({name : current_group})
+
+            elif clazz == 'text-nowrap':
+                link = item.xpath("a")[0]
+                href = link.xpath('@href')[0]
+                name = link.text_content()
+
+                current_group.append({'path': href, 'name': name})
+
+            elif clazz == 'dropdown':
+                li_items = item.xpath("ul/li")
+
+                del current_group[:]
+
+                for li_item in li_items:
+                    link = li_item.xpath("a")[0]
+                    href = link.xpath('@href')[0]
+                    name = link.text_content()
+
+                    current_group.append({'path': href, 'name': name})
+
+        return list
+
     def get_serie_info(self, path):
         serie_info = self.to_json(self.fetch_content(self.URL + path + "/playlist.txt"))['playlist']
 
