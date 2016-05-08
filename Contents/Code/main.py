@@ -114,7 +114,7 @@ def HandleSerie(type, path, name, thumb, operation=None):
         rating_key = service.get_episode_url(path, season, 0)
 
         oc.add(SeasonObject(
-            key=Callback(HandleSeason, type=MediaInfo.SEASON, path=path, name=name, thumb=thumb, season=season,
+            key=Callback(HandleSeason, type=MediaInfo.SEASON, path=path, name=season_name, thumb=thumb, season=season,
                          episodes=json.dumps(episodes)),
             rating_key=rating_key,
             title=util.sanitize(season_name),
@@ -139,12 +139,12 @@ def HandleSeason(type, path, name, thumb, season, episodes=None, operation=None,
 
     if not episodes:
         serie_info = service.get_serie_info(path)
-        episodes = serie_info[int(season)-1]['playlist']
+        list = serie_info[int(season)-1]['playlist']
     else:
-        Log(episodes)
-        episodes = json.loads(episodes)
+        Log(list)
+        list = json.loads(list)
 
-    for episode in episodes:
+    for episode in list:
         episode_name = episode['comment']
         thumb = service.URL + episode['poster']
         url = episode['file']
