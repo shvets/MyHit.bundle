@@ -68,17 +68,6 @@ class MyHitServiceTest(unittest.TestCase):
 
         print(json.dumps(result, indent=4))
 
-    def test_get_urls(self):
-        movies = self.service.get_popular_movies()['movies']
-
-        movie = movies[0]
-
-        print(json.dumps(movie, indent=4))
-
-        result = self.service.get_urls(movie['path'])
-
-        print(json.dumps(result, indent=4))
-
     def test_get_serie_info(self):
         series = self.service.get_popular_series()['movies']
 
@@ -88,20 +77,31 @@ class MyHitServiceTest(unittest.TestCase):
 
         print(json.dumps(result, indent=4))
 
-    def test_get_play_list(self):
-        movies = self.service.get_popular_movies()['movies']
+    # def test_get_urls(self):
+    #     movies = self.service.get_popular_movies()['movies']
+    #
+    #     movie = movies[0]
+    #
+    #     print(json.dumps(movie, indent=4))
+    #
+    #     result = self.service.get_urls(path=movie['path'])
+    #
+    #     print(json.dumps(result, indent=4))
 
-        movie = movies[0]
-
-        urls = self.service.get_urls(movie['path'])
-
-        print(json.dumps(urls, indent=4))
-
-        url = urls[0]
-
-        play_list = self.service.get_play_list(url)
-
-        print play_list
+    # def test_get_play_list(self):
+    #     movies = self.service.get_popular_movies()['movies']
+    #
+    #     movie = movies[0]
+    #
+    #     urls = self.service.get_urls(movie['path'])
+    #
+    #     print(json.dumps(urls, indent=4))
+    #
+    #     url = urls[0]
+    #
+    #     play_list = self.service.get_play_list(url)
+    #
+    #     print play_list
 
     def test_pagination_in_popular_movies(self):
         result = self.service.get_popular_movies(page=1)
@@ -148,18 +148,18 @@ class MyHitServiceTest(unittest.TestCase):
 
         print result
 
-    def test_get_play_list3(self):
-        movies = self.service.get_popular_movies()['movies']
-
-        movie = movies[0]
-
-        urls = self.service.get_urls(movie['path'])
-
-        print urls
-
-        urls = self.service.get_play_list_urls3(urls[0])
-
-        print(json.dumps(urls, indent=4))
+    # def test_get_play_list3(self):
+    #     movies = self.service.get_popular_movies()['movies']
+    #
+    #     movie = movies[0]
+    #
+    #     urls = self.service.get_urls(movie['path'])
+    #
+    #     print urls
+    #
+    #     urls = self.service.get_play_list_urls3(urls[0])
+    #
+    #     print(json.dumps(urls, indent=4))
 
         # print self.service.http_request(urls[0]).read()
 

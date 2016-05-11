@@ -9,14 +9,14 @@ from media_info import MediaInfo
 class MediaInfoTest(unittest.TestCase):
 
     def test_create_media_info_no_params(self):
-        media_info = MediaInfo('video')
+        media_info = MediaInfo()
 
-        self.assertEqual(media_info.type, 'video')
+        self.assertEqual(media_info['type'], 'movie')
 
     def test_create_media_info_with_params(self):
-        media_info = MediaInfo('video', path='path', name='name')
+        media_info = MediaInfo(path='path', name='name')
 
-        self.assertEqual(media_info.type, 'video')
+        self.assertEqual(media_info['type'], 'movie')
         self.assertEqual(media_info['path'], 'path')
         self.assertEqual(media_info['name'], 'name')
 

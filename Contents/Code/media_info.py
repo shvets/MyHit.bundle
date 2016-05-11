@@ -1,12 +1,5 @@
 class MediaInfo(dict):
-    VIDEO = 'video'
-    AUDIO = 'audio'
-    SERIE = 'serie'
-    SEASON = 'season'
-    EPISODE = 'episode'
-    SELECTION = 'selection'
-
-    def __init__(self, type=VIDEO, **params):
+    def __init__(self, type='movie', **params):
         super(MediaInfo, self).__init__()
 
         self['type'] = type

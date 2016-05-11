@@ -9,19 +9,14 @@ def push_to_history(item):
 
     path = item['path']
 
-    history[path] = {
-        'type': item['type'],
-        'path': item['path'],
-        'name': item['name'],
-        'thumb': item['thumb'],
-        'time': Datetime.TimestampFromDatetime(Datetime.Now())
-    }
+    hash = {}
 
-    if 'season' in item:
-        history[path]['season'] = item['season']
+    for key, value in item.iteritems():
+        hash[key] = value
 
-    if 'episode' in item:
-        history[path]['episode'] = item['episode']
+    hash['time'] = Datetime.TimestampFromDatetime(Datetime.Now())
+
+    history[path] = hash
 
     # Trim old items
     if len(history) > HISTORY_SIZE:

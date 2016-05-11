@@ -1,6 +1,5 @@
 from storage import Storage
 from file_storage import FileStorage
-from media_info import MediaInfo
 
 class MediaInfoStorage(FileStorage):
     def __init__(self, file_name):
@@ -15,18 +14,17 @@ class MediaInfoStorage(FileStorage):
             mode = search_item['type']
 
             if item['path'] == search_item['path']:
-                if mode == MediaInfo.VIDEO or mode == MediaInfo.AUDIO or \
-                   mode == MediaInfo.SERIE or mode == MediaInfo.SELECTION:
+                if mode in ['movie', 'track', 'serie', 'selection', 'tracks', 'author', 'soundtrack']:
                     found = item
 
-                elif mode == MediaInfo.SEASON:
+                elif mode == 'season':
                     if 'season' in item:
                         if item['season'] == search_item['season']:
                             if not 'episode' in item:
                                 found = item
                     break
 
-                elif mode == MediaInfo.EPISODE:
+                elif mode == 'episode':
                     if 'season' in item and 'season' in search_item:
                         if item['season'] == search_item['season']:
                             if 'episode' in item and 'episode' in search_item:
