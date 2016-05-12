@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+
 from http_service import HttpService
 
 class MyHitService(HttpService):

@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import sys
+import os
+
 def get_language():
     return Prefs['language'].split('/')[1]
 
@@ -21,3 +24,8 @@ def no_contents(name=None):
 
 def sanitize(name):
     return unicode(name[0:35])
+
+def add_library(path):
+    lib_path = Core.storage.abs_path(Core.storage.join_path(Core.bundle_path, 'Contents', 'Code', path))
+
+    sys.path.append(os.path.abspath(os.path.join(lib_path)))

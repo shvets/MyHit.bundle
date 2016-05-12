@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import util
-import history
 import constants
-from plex_service import PlexService
+from my_hit_plex_service import MyHitPlexService
 
-service = PlexService()
+util.add_library("common")
+util.add_library("common_plex")
+
+service = MyHitPlexService()
 
 import main
 
