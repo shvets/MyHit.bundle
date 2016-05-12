@@ -66,8 +66,12 @@ def reset():
 @task
 def copy(plugin_dir):
     run("mkdir -p " + plugin_dir + "/Contents/Code")
+    run("mkdir -p " + plugin_dir + "/Contents/Code/common")
+    run("mkdir -p " + plugin_dir + "/Contents/Code/common_plex")
 
     run("cp -R Contents/* " + plugin_dir + "/Contents")
+    run("cp -R Contents/Code/common/* " + plugin_dir + "/Contents/Code/common")
+    run("cp -R Contents/Code/common_plex/* " + plugin_dir + "/Contents/Code/common_plex")
 
     print("Files were copied.")
 

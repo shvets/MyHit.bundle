@@ -7,6 +7,13 @@ class MyHitStorage(PlexStorage):
 
         self.load()
 
+        self.register_simple_type('movie')
+        self.register_simple_type('track')
+        self.register_simple_type('serie')
+        self.register_simple_type('selection')
+        self.register_simple_type('tracks')
+        self.register_simple_type('soundtrack')
+
     def append_controls(self, oc, handler, media_info):
         bookmark = self.find(media_info)
 

@@ -5,26 +5,32 @@ class MediaInfoStorage(FileStorage):
     def __init__(self, file_name):
         FileStorage.__init__(self, file_name)
 
+        self.simple_types = []
+
+    def register_simple_type(self, name):
+        if name not in self.simple_types:
+            return self.simple_types.append(name)
+
     def find(self, search_item):
         MediaInfoStorage.sanitize(search_item)
 
         found = None
 
         for item in self.data:
-            mode = search_item['type']
+            type = search_item['type']
 
             if item['path'] == search_item['path']:
-                if mode in ['movie', 'track', 'serie', 'selection', 'tracks', 'author', 'soundtrack']:
+                if type in  self.simple_types:
                     found = item
 
-                elif mode == 'season':
+                elif type == 'season':
                     if 'season' in item:
                         if item['season'] == search_item['season']:
                             if not 'episode' in item:
                                 found = item
                     break
 
-                elif mode == 'episode':
+                elif type == 'episode':
                     if 'season' in item and 'season' in search_item:
                         if item['season'] == search_item['season']:
                             if 'episode' in item and 'episode' in search_item:
