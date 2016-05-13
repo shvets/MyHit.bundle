@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from Framework.api.objectkit import ObjectContainer, DirectoryObject
-
 import json
 import constants
 import util
