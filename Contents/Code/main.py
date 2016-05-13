@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from Framework.api.objectkit import ObjectContainer, DirectoryObject
+
 import json
 import constants
 import util
@@ -7,6 +9,10 @@ import pagination
 import history
 from flow_builder import FlowBuilder
 from media_info import MediaInfo
+
+from my_hit_plex_service import MyHitPlexService
+
+service = MyHitPlexService()
 
 builder = FlowBuilder()
 
@@ -75,7 +81,7 @@ def HandleMovie(operation=None, container=False, **params):
     oc.add(MetadataObjectForURL(media_info=media_info, url_items=url_items, player=PlayVideo))
 
     if str(container) == 'False':
-        history.push_to_history(media_info)
+        history.push_to_history(Data, media_info)
         service.queue.append_controls(oc, HandleMovie, media_info)
 
     return oc
@@ -193,7 +199,7 @@ def HandleSeason(operation=None, container=False, **params):
         ))
 
     if str(container) == 'False':
-        history.push_to_history(media_info)
+        history.push_to_history(Data, media_info)
         service.queue.append_controls(oc, HandleSeason, media_info)
 
     return oc
@@ -263,7 +269,7 @@ def HandleSoundtrack(operation=None, container=False, **params):
         ))
 
     if str(container) == 'False':
-        history.push_to_history(media_info)
+        history.push_to_history(Data, media_info)
         service.queue.append_controls(oc, HandleSoundtrack, media_info)
 
     return oc
@@ -535,7 +541,7 @@ def HandleQueue():
 
 @route(constants.PREFIX + '/history')
 def HandleHistory():
-    history_object = history.load_history()
+    history_object = history.load_history(Data)
 
     oc = ObjectContainer(title2=unicode(L('History')))
 

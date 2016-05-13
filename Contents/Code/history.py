@@ -1,7 +1,7 @@
 KEY_HISTORY = 'history'
 HISTORY_SIZE = 60
 
-def push_to_history(item):
+def push_to_history(Data, item):
     history = Data.LoadObject(KEY_HISTORY)
 
     if not history:
@@ -33,5 +33,5 @@ def push_to_history(item):
 
     Data.SaveObject(KEY_HISTORY, history)
 
-def load_history():
+def load_history(Data):
     return Data.LoadObject(KEY_HISTORY)
