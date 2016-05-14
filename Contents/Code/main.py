@@ -33,7 +33,8 @@ def HandleMovies(path, title, page=1):
         thumb = item['thumb']
 
         new_params = {
-            'path' :item['path'],
+            'type': "movie",
+            'id' :item['path'],
             'name': item['name'],
             'thumb': item['thumb']
         }
@@ -63,9 +64,9 @@ def HandleMovie(operation=None, container=False, **params):
         episode = None
 
     if season and int(season) > 0 and episode:
-        urls = service.get_urls(url=params['path'])
+        urls = service.get_urls(url=params['id'])
     else:
-        urls = service.get_urls(path=params['path'])
+        urls = service.get_urls(path=params['id'])
 
     url_items = service.get_urls_metadata(urls)
 
@@ -101,7 +102,7 @@ def HandleSeries(path, title, page=1):
     for item in response['movies']:
         new_params = {
             'type': 'serie',
-            'path': item['path'],
+            'id': item['path'],
             'name': item['name'],
             'thumb': item['thumb']
         }
@@ -127,17 +128,17 @@ def HandleSerie(operation=None, **params):
     elif operation == 'remove':
         service.queue.remove(media_info)
 
-    serie_info = service.get_serie_info(params['path'])
+    serie_info = service.get_serie_info(params['id'])
 
     for index, item in enumerate(serie_info):
         season = index+1
         season_name = item['pltitle']
         episodes = item['playlist']
-        rating_key = service.get_episode_url(params['path'], season, 0)
+        rating_key = service.get_episode_url(params['id'], season, 0)
 
         new_params = {
             'type': 'season',
-            'path': params['path'],
+            'id': params['id'],
             'name': season_name,
             'thumb': params['thumb'],
             'season': season,
@@ -168,7 +169,7 @@ def HandleSeason(operation=None, container=False, **params):
         service.queue.remove(media_info)
 
     if not params['episodes']:
-        serie_info = service.get_serie_info(params['path'])
+        serie_info = service.get_serie_info(params['id'])
         list = serie_info[int(params['season'])-1]['playlist']
     else:
         list = json.loads(params['episodes'])
@@ -180,7 +181,7 @@ def HandleSeason(operation=None, container=False, **params):
 
         new_params = {
             'type': 'episode',
-            'path':url,
+            'id':url,
             'name': episode_name,
             'parentName': params['name'],
             'thumb': thumb,
@@ -215,7 +216,7 @@ def HandleSoundtracks(page=1):
     for item in response['movies']:
         new_params = {
             'type': 'soundtrack',
-            'path': item['path'],
+            'id': item['path'],
             'name': item['name'],
             'thumb': item['thumb']
         }
@@ -241,7 +242,7 @@ def HandleSoundtrack(operation=None, container=False, **params):
     elif operation == 'remove':
         service.queue.remove(media_info)
 
-    albums = service.get_albums(params['path'])
+    albums = service.get_albums(params['id'])
 
     albums_count = len(albums)
 
@@ -284,7 +285,7 @@ def HandleSelections(page=1):
         if name != "Актёры и актрисы" and name != "Актеры и актрисы":
             new_params = {
                 'type': 'selection',
-                'path': item['path'],
+                'id': item['path'],
                 'name': name,
                 'thumb': item['thumb'],
             }
@@ -310,12 +311,12 @@ def HandleSelection(page=1, operation=None, **params):
     elif operation == 'remove':
         service.queue.remove(media_info)
 
-    response = service.get_selection(params['path'], page=page)
+    response = service.get_selection(params['id'], page=page)
 
     for item in response['movies']:
         new_params = {
             'type': 'movie',
-            'path': item['path'],
+            'id': item['path'],
             'name': item['name'],
             'thumb': item['thumb'],
         }
@@ -414,7 +415,7 @@ def HandleTrack(container=False, **params):
 
     url_items = [
         {
-            "url": params['path'],
+            "url": params['id'],
             "config": {
                 "container": audio_container,
                 "audio_codec": audio_codec,
@@ -535,7 +536,19 @@ def HandleQueue():
             thumb=thumb
         ))
 
+    if len(service.queue.data) > 0:
+        oc.add(DirectoryObject(
+            key=Callback(ClearQueue),
+            title=unicode(L("Clear Queue"))
+        ))
+
     return oc
+
+@route(constants.PREFIX + '/clear_queue')
+def ClearQueue():
+    service.queue.clear()
+
+    return HandleQueue()
 
 @route(constants.PREFIX + '/history')
 def HandleHistory():
@@ -545,19 +558,10 @@ def HandleHistory():
 
     if history_object:
         for item in sorted(history_object.values(), key=lambda k: k['time'], reverse=True):
-            type = item['type']
-            path = item['path']
-            name = item['name']
-
-            if item['thumb']:
-                thumb = service.get_thumb(item['thumb'])
-            else:
-                thumb = None
-
             oc.add(DirectoryObject(
-                key=Callback(HandleContainer, type=type, path=path, name=name, thumb=thumb),
-                title=unicode(name),
-                thumb=thumb
+                key=Callback(HandleContainer, **item),
+                title=unicode(item['name']),
+                thumb=item['thumb']
             ))
 
     return oc

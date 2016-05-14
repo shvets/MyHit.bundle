@@ -7,7 +7,7 @@ def push_to_history(Data, item):
     if not history:
         history = {}
 
-    path = item['path']
+    id = item['id']
 
     hash = {}
 
@@ -16,7 +16,7 @@ def push_to_history(Data, item):
 
     hash['time'] = Datetime.TimestampFromDatetime(Datetime.Now())
 
-    history[path] = hash
+    history[id] = hash
 
     # Trim old items
     if len(history) > HISTORY_SIZE:
@@ -29,7 +29,7 @@ def push_to_history(Data, item):
         history = {}
 
         for it in items:
-            history[it['path']] = it
+            history[it['id']] = it
 
     Data.SaveObject(KEY_HISTORY, history)
 
