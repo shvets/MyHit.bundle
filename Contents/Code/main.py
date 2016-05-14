@@ -374,35 +374,30 @@ def HandleFilter(mode, name, list):
 
     return oc
 
-def MetadataObjectForURL(media_info, url_items, player):
-    metadata_object = builder.build_metadata_object(media_type=media_info['type'], title=media_info['name'])
+@route(constants.PREFIX + '/tracks')
+def HandleTracks(**params):
+    oc = ObjectContainer(title2=unicode(params['name']))
 
-    if 'season' in media_info:
-        season = media_info['season']
-    else:
-        season = None
+    for track in json.loads(params['tracks']):
+        url = track['url']
+        name = track['name']
+        format = "mp3"
+        bitrate = track['bitrate']
+        duration = track['duration']
 
-    if 'episode' in media_info:
-        episode = media_info['episode']
-    else:
-        episode = None
+        new_params = MediaInfo(
+            type='track',
+            path=url,
+            name=name,
+            artist=params['artist'],
+            format=format,
+            bitrate=bitrate,
+            duration=duration
+        )
 
-    metadata_object.key = Callback(HandleMovie, container=True, **media_info)
+        oc.add(HandleTrack(**new_params))
 
-    # metadata_object.rating_key = 'rating_key'
-    metadata_object.rating_key = unicode(media_info['name'])
-    # metadata_object.rating = data['rating']
-    metadata_object.thumb = media_info['thumb']
-    # metadata_object.url = urls['m3u8'][0]
-    # metadata_object.art = data['thumb']
-    # metadata_object.tags = data['tags']
-    # metadata_object.duration = data['duration'] * 1000
-    # metadata_object.summary = data['summary']
-    # metadata_object.directors = data['directors']
-
-    metadata_object.items.extend(MediaObjectsForURL(url_items, player=player))
-
-    return metadata_object
+    return oc
 
 @route(constants.PREFIX + '/track')
 def HandleTrack(container=False, **params):
@@ -437,48 +432,6 @@ def HandleTrack(container=False, **params):
         return oc
     else:
         return track
-
-@route(constants.PREFIX + '/tracks')
-def HandleTracks(**params):
-    oc = ObjectContainer(title2=unicode(params['name']))
-
-    for track in json.loads(params['tracks']):
-        url = track['url']
-        name = track['name']
-        format = "mp3"
-        bitrate = track['bitrate']
-        duration = track['duration']
-
-        new_params = MediaInfo(
-            type='track',
-            path=url,
-            name=name,
-            artist=params['artist'],
-            format=format,
-            bitrate=bitrate,
-            duration=duration
-        )
-
-        oc.add(HandleTrack(**new_params))
-
-    return oc
-
-def AudioMetadataObjectForURL(media_info, url_items, player):
-    metadata_object = builder.build_metadata_object(media_type=media_info['type'], title=media_info['name'])
-
-    metadata_object.key = Callback(HandleTrack, container=True, **media_info)
-    metadata_object.rating_key = unicode(media_info['name'])
-    metadata_object.duration = int(media_info['duration']) * 1000
-
-    if 'thumb' in media_info:
-        metadata_object.artist = media_info['thumb']
-
-    if 'artist' in media_info:
-        metadata_object.artist = media_info['artist']
-
-    metadata_object.items.extend(MediaObjectsForURL(url_items, player))
-
-    return metadata_object
 
 @route(constants.PREFIX + '/search')
 def HandleSearch(query=None, page=1):
@@ -565,6 +518,53 @@ def HandleHistory():
             ))
 
     return oc
+
+def MetadataObjectForURL(media_info, url_items, player):
+    metadata_object = builder.build_metadata_object(media_type=media_info['type'], title=media_info['name'])
+
+    # if 'season' in media_info:
+    #     season = media_info['season']
+    # else:
+    #     season = None
+    #
+    # if 'episode' in media_info:
+    #     episode = media_info['episode']
+    # else:
+    #     episode = None
+
+    metadata_object.key = Callback(HandleMovie, container=True, **media_info)
+
+    # metadata_object.rating_key = 'rating_key'
+    metadata_object.rating_key = unicode(media_info['name'])
+    # metadata_object.rating = data['rating']
+    metadata_object.thumb = media_info['thumb']
+    # metadata_object.url = urls['m3u8'][0]
+    # metadata_object.art = data['thumb']
+    # metadata_object.tags = data['tags']
+    # metadata_object.duration = data['duration'] * 1000
+    # metadata_object.summary = data['summary']
+    # metadata_object.directors = data['directors']
+
+    metadata_object.items.extend(MediaObjectsForURL(url_items, player=player))
+
+    return metadata_object
+
+def AudioMetadataObjectForURL(media_info, url_items, player):
+    metadata_object = builder.build_metadata_object(media_type=media_info['type'], title=media_info['name'])
+
+    metadata_object.key = Callback(HandleTrack, container=True, **media_info)
+    metadata_object.rating_key = unicode(media_info['name'])
+    metadata_object.duration = int(media_info['duration']) * 1000
+
+    if 'thumb' in media_info:
+        metadata_object.artist = media_info['thumb']
+
+    if 'artist' in media_info:
+        metadata_object.artist = media_info['artist']
+
+    metadata_object.items.extend(MediaObjectsForURL(url_items, player))
+
+    return metadata_object
 
 def MediaObjectsForURL(url_items, player):
     media_objects = []
