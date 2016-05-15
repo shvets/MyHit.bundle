@@ -3,7 +3,6 @@
 import util
 
 util.add_library("common")
-util.add_library("common_plex")
 
 import constants
 from my_hit_plex_service import MyHitPlexService

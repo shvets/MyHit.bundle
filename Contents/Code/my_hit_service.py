@@ -301,8 +301,14 @@ class MyHitService(HttpService):
 
         index1 = script.find("file:")
         index2 = script.find(".f4m")
+        name = script[index1 + 6:index2]
 
-        return script[index1 + 6:index2] + ".f4m"
+        if name:
+            name = name + ".f4m"
+        else:
+            name = None
+
+        return name
 
     def get_urls(self, path=None, url=None):
         if not path and not url:
@@ -315,11 +321,14 @@ class MyHitService(HttpService):
             else:
                 source_url = url
 
-        new_url = source_url.replace('.f4m', '.m3u8')
+        if source_url:
+            new_url = source_url.replace('.f4m', '.m3u8')
 
-        urls = self.get_play_list_urls( new_url)
+            urls = self.get_play_list_urls( new_url)
 
-        return list(reversed(urls))
+            return list(reversed(urls))
+        else:
+            return []
 
     def get_urls_metadata(self, urls):
         urls_items = []
