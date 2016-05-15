@@ -1,12 +1,12 @@
 import constants
 from my_hit_service import MyHitService
-from my_hit_plex_storage import MyHitPlexStorage
+from plex_storage import PlexStorage
 
 class MyHitPlexService(MyHitService):
     def __init__(self):
         storage_name = Core.storage.abs_path(Core.storage.join_path(Core.bundle_path, 'Contents', 'myhit.storage'))
 
-        self.queue = MyHitPlexStorage(storage_name)
+        self.queue = PlexStorage(storage_name)
 
         self.queue.register_simple_type('movie')
         self.queue.register_simple_type('track')

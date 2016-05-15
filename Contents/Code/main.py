@@ -7,12 +7,16 @@ import pagination
 import history
 from flow_builder import FlowBuilder
 from media_info import MediaInfo
-
 from my_hit_plex_service import MyHitPlexService
 
 service = MyHitPlexService()
 
 builder = FlowBuilder()
+
+# import sys
+#
+# for path in sys.path:
+#     Log(path)
 
 @route(constants.PREFIX + '/all_movies')
 def HandleAllMovies(page=1):
