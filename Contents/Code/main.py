@@ -380,7 +380,7 @@ def HandleTracks(**params):
 
         new_params = MediaInfo(
             type='track',
-            path=url,
+            id=url,
             name=name,
             artist=params['artist'],
             format=format,
