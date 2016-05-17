@@ -78,13 +78,13 @@ def HandleMovie(operation=None, container=False, **params):
 
         media_info = MediaInfo(**params)
 
-        service.handle_bookmark_operation(operation, media_info)
+        service.queue.handle_bookmark_operation(operation, media_info)
 
         oc.add(MetadataObjectForURL(media_info=media_info, url_items=url_items, player=PlayVideo))
 
         if str(container) == 'False':
             history.push_to_history(Data, media_info)
-            service.append_bookmark_controls(oc, HandleMovie, media_info)
+            service.queue.append_bookmark_controls(oc, HandleMovie, media_info)
 
         return oc
 
@@ -126,7 +126,7 @@ def HandleSerie(operation=None, **params):
 
     media_info = MediaInfo(**params)
 
-    service.handle_bookmark_operation(operation, media_info)
+    service.queue.handle_bookmark_operation(operation, media_info)
 
     serie_info = service.get_serie_info(params['id'])
 
@@ -164,7 +164,7 @@ def HandleSeason(operation=None, container=False, **params):
 
     media_info = MediaInfo(**params)
 
-    service.handle_bookmark_operation(operation, media_info)
+    service.queue.handle_bookmark_operation(operation, media_info)
 
     if not params['episodes']:
         serie_info = service.get_serie_info(params['id'])
@@ -198,7 +198,7 @@ def HandleSeason(operation=None, container=False, **params):
 
     if str(container) == 'False':
         history.push_to_history(Data, media_info)
-        service.append_bookmark_controls(oc, HandleSeason, media_info)
+        service.queue.append_bookmark_controls(oc, HandleSeason, media_info)
 
     return oc
 
@@ -236,7 +236,7 @@ def HandleSoundtrack(operation=None, container=False, **params):
 
     media_info = MediaInfo(**params)
 
-    service.handle_bookmark_operation(operation, media_info)
+    service.queue.handle_bookmark_operation(operation, media_info)
 
     albums = service.get_albums(params['id'])
 
@@ -265,7 +265,7 @@ def HandleSoundtrack(operation=None, container=False, **params):
 
     if str(container) == 'False':
         history.push_to_history(Data, media_info)
-        service.append_bookmark_controls(oc, HandleSoundtrack, media_info)
+        service.queue.append_bookmark_controls(oc, HandleSoundtrack, media_info)
 
     return oc
 
@@ -302,7 +302,7 @@ def HandleSelection(page=1, operation=None, **params):
 
     media_info = MediaInfo(**params)
 
-    service.handle_bookmark_operation(operation, media_info)
+    service.queue.handle_bookmark_operation(operation, media_info)
 
     response = service.get_selection(params['id'], page=page)
 
@@ -320,7 +320,7 @@ def HandleSelection(page=1, operation=None, **params):
             thumb=item['thumb']
         ))
 
-    service.append_bookmark_controls(oc, HandleSelection, media_info)
+    service.queue.append_bookmark_controls(oc, HandleSelection, media_info)
     pagination.append_controls(oc, response, page=page, callback=HandleSelection, **media_info)
 
     return oc
