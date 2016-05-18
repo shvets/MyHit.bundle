@@ -472,28 +472,6 @@ def HandleContainer(**params):
     elif type == 'selection':
         return HandleSelection(**params)
 
-def getQueueItemName(media_info):
-    type = media_info['type']
-
-    if type == 'episode':
-        if 'serieName' in media_info:
-            name = "+ " + media_info['season'] + ", " + media_info['episodeNumber'] + " " + media_info['serieName']
-        else:
-            name = "+ " + media_info['season'] + ", " + media_info['episodeNumber'] + " " + media_info['name']
-
-    elif type == 'season':
-        if 'serieName' in media_info:
-            name = "+ " + media_info['season'] + " " + media_info['serieName']
-        else:
-            name = "+ " + media_info['season'] + " " + media_info['name']
-
-    elif type == 'serie':
-        name = "+ " + media_info['name']
-    else:
-        name = media_info['name']
-
-    return name
-
 @route(constants.PREFIX + '/queue')
 def HandleQueue():
     oc = ObjectContainer(title2=unicode(L('Queue')))

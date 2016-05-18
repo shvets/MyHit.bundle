@@ -1,10 +1,6 @@
 from storage import Storage
 from file_storage import FileStorage
 
-import library_bridge
-
-Log = library_bridge.bridge.objects['Log']
-
 class MediaInfoStorage(FileStorage):
     def __init__(self, file_name):
         FileStorage.__init__(self, file_name)
@@ -14,6 +10,28 @@ class MediaInfoStorage(FileStorage):
     def register_simple_type(self, name):
         if name not in self.simple_types:
             return self.simple_types.append(name)
+
+    def getItemName(self, media_info):
+        type = media_info['type']
+
+        if type == 'episode':
+            if 'serieName' in media_info:
+                name = "+ " + media_info['season'] + ", " + media_info['episodeNumber'] + " " + media_info['serieName']
+            else:
+                name = "+ " + media_info['season'] + ", " + media_info['episodeNumber'] + " " + media_info['name']
+
+        elif type == 'season':
+            if 'serieName' in media_info:
+                name = "+ " + media_info['season'] + " " + media_info['serieName']
+            else:
+                name = "+ " + media_info['season'] + " " + media_info['name']
+
+        elif type == 'serie':
+            name = "+ " + media_info['name']
+        else:
+            name = media_info['name']
+
+        return name
 
     def find(self, search_item):
         MediaInfoStorage.sanitize(search_item)
