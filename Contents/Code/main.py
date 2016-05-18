@@ -484,7 +484,7 @@ def HandleQueue():
 
         oc.add(DirectoryObject(
             key=Callback(HandleContainer, **media_info),
-            title=unicode(getQueueItemName(media_info)),
+            title=unicode(service.queue.getItemName(media_info)),
             thumb=thumb
         ))
 
