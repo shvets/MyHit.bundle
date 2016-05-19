@@ -437,14 +437,13 @@ def HandleSearch(query=None, page=1):
         thumb = movie['thumb']
 
         new_params = {
-            'type': 'movie',
             'id': movie['path'],
             'title': name,
             'name': name,
             'thumb': thumb
         }
         oc.add(DirectoryObject(
-            key=Callback(HandleContainer, **new_params),
+            key=Callback(HandleMovieOrSerie, **new_params),
             title=unicode(name),
             thumb=thumb
         ))
@@ -452,6 +451,17 @@ def HandleSearch(query=None, page=1):
     pagination.append_controls(oc, response, callback=HandleSearch, query=query, page=page)
 
     return oc
+
+@route(constants.PREFIX + '/movie_or_serie')
+def HandleMovieOrSerie(**params):
+    serie_info = service.get_serie_info(params['id'])
+
+    if serie_info:
+        params['type'] = 'serie'
+    else:
+        params['type'] = 'movie'
+
+    return HandleContainer(**params)
 
 @route(constants.PREFIX + '/container')
 def HandleContainer(**params):
@@ -520,16 +530,6 @@ def HandleHistory():
 
 def MetadataObjectForURL(media_info, url_items, player):
     metadata_object = builder.build_metadata_object(media_type=media_info['type'], title=media_info['name'])
-
-    # if 'season' in media_info:
-    #     season = media_info['season']
-    # else:
-    #     season = None
-    #
-    # if 'episode' in media_info:
-    #     episode = media_info['episode']
-    # else:
-    #     episode = None
 
     metadata_object.key = Callback(HandleMovie, container=True, **media_info)
 

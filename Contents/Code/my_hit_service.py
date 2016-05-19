@@ -252,7 +252,7 @@ class MyHitService(HttpService):
     def get_serie_info(self, path):
         serie_info = self.to_json(self.fetch_content(self.URL + path + "/playlist.txt"))['playlist']
 
-        if len(serie_info) > 0 and 'playlist' not in serie_info[0]:
+        if serie_info and len(serie_info) > 0 and 'playlist' not in serie_info[0]:
             serie_info = [{
                 "pltitle": "Сезон 1",
                 "playlist": serie_info
