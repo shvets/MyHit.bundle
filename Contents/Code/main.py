@@ -1,15 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import json
-import constants
-import util
+import plex_util
 import pagination
 import history
 from flow_builder import FlowBuilder
 from media_info import MediaInfo
-from my_hit_plex_service import MyHitPlexService
-
-service = MyHitPlexService()
 
 builder = FlowBuilder()
 
@@ -18,15 +14,15 @@ builder = FlowBuilder()
 # for path in sys.path:
 #     Log(path)
 
-@route(constants.PREFIX + '/all_movies')
+@route(PREFIX + '/all_movies')
 def HandleAllMovies(page=1):
     return HandleMovies("/film/", title='Movies', page=page)
 
-@route(constants.PREFIX + '/popular_movies')
+@route(PREFIX + '/popular_movies')
 def HandlePopularMovies(page=1):
     return HandleMovies("/film/?s=3", title='Popular Movies', page=page)
 
-@route(constants.PREFIX + '/movies')
+@route(PREFIX + '/movies')
 def HandleMovies(path, title, page=1):
     oc = ObjectContainer(title2=unicode(L(title)))
 
@@ -44,15 +40,15 @@ def HandleMovies(path, title, page=1):
         }
         oc.add(DirectoryObject(
             key=Callback(HandleMovie, **new_params),
-            title=util.sanitize(name),
-            thumb=thumb
+            title=plex_util.sanitize(name),
+            thumb=plex_util.get_thumb(thumb)
         ))
 
     pagination.append_controls(oc, response, callback=HandleMovies, path=path, title=title, page=page)
 
     return oc
 
-@route(constants.PREFIX + '/movie')
+@route(PREFIX + '/movie')
 def HandleMovie(operation=None, container=False, **params):
     oc = ObjectContainer(title2=unicode(L(params['name'])))
 
@@ -72,7 +68,7 @@ def HandleMovie(operation=None, container=False, **params):
         urls = service.get_urls(path=params['id'])
 
     if len(urls) == 0:
-        return util.no_contents()
+        return plex_util.no_contents()
     else:
         url_items = service.get_urls_metadata(urls)
 
@@ -88,15 +84,15 @@ def HandleMovie(operation=None, container=False, **params):
 
         return oc
 
-@route(constants.PREFIX + '/all_series')
+@route(PREFIX + '/all_series')
 def HandleAllSeries(page=1):
     return HandleSeries("/serial/", title='Series', page=page)
 
-@route(constants.PREFIX + '/popular_series')
+@route(PREFIX + '/popular_series')
 def HandlePopularSeries(page=1):
     return HandleSeries("/serial/?s=3", title='Popular Series', page=page)
 
-@route(constants.PREFIX + '/series')
+@route(PREFIX + '/series')
 def HandleSeries(path, title, page=1):
     oc = ObjectContainer(title2=unicode(L(title)))
 
@@ -112,15 +108,15 @@ def HandleSeries(path, title, page=1):
 
         oc.add(DirectoryObject(
             key=Callback(HandleSerie, **new_params),
-            title=util.sanitize(item['name']),
-            thumb=item['thumb']
+            title=plex_util.sanitize(item['name']),
+            thumb=plex_util.get_thumb(item['thumb'])
         ))
 
     pagination.append_controls(oc, response, callback=HandleSeries, path=path, title=title, page=page)
 
     return oc
 
-@route(constants.PREFIX + '/serie')
+@route(PREFIX + '/serie')
 def HandleSerie(operation=None, **params):
     oc = ObjectContainer(title2=unicode(params['name']))
 
@@ -149,16 +145,16 @@ def HandleSerie(operation=None, **params):
         oc.add(SeasonObject(
             key=Callback(HandleSeason, **new_params),
             rating_key=rating_key,
-            title=util.sanitize(season_name),
+            title=plex_util.sanitize(season_name),
             index=int(season),
-            thumb=params['thumb']
+            thumb=plex_util.get_thumb(params['thumb'])
         ))
 
     service.queue.append_bookmark_controls(oc, HandleSerie, media_info)
 
     return oc
 
-@route(constants.PREFIX + '/season', container=bool)
+@route(PREFIX + '/season', container=bool)
 def HandleSeason(operation=None, container=False, **params):
     oc = ObjectContainer(title2=unicode(params['name']))
 
@@ -179,7 +175,7 @@ def HandleSeason(operation=None, container=False, **params):
 
         new_params = {
             'type': 'episode',
-            'id':url,
+            'id': url,
             'name': episode_name,
             'serieName': params['serieName'],
             'thumb': thumb,
@@ -193,7 +189,7 @@ def HandleSeason(operation=None, container=False, **params):
         oc.add(DirectoryObject(
             key=key,
             title=unicode(episode_name),
-            thumb=thumb
+            thumb=plex_util.get_thumb(thumb)
         ))
 
     if str(container) == 'False':
@@ -202,11 +198,11 @@ def HandleSeason(operation=None, container=False, **params):
 
     return oc
 
-@route(constants.PREFIX + '/episode')
+@route(PREFIX + '/episode')
 def HandleEpisode(operation=None, container=False, **params):
     return HandleMovie(operation=operation, container=container, **params)
 
-@route(constants.PREFIX + '/soundtracks')
+@route(PREFIX + '/soundtracks')
 def HandleSoundtracks(page=1):
     oc = ObjectContainer(title2=unicode(L('Soundtracks')))
 
@@ -222,15 +218,15 @@ def HandleSoundtracks(page=1):
 
         oc.add(DirectoryObject(
             key=Callback(HandleSoundtrack, **new_params),
-            title=util.sanitize(item['name']),
-            thumb=item['thumb']
+            title=plex_util.sanitize(item['name']),
+            thumb=plex_util.get_thumb(item['thumb'])
         ))
 
     pagination.append_controls(oc, response, callback=HandleSoundtracks, page=page)
 
     return oc
 
-@route(constants.PREFIX + '/soundtrack')
+@route(PREFIX + '/soundtrack')
 def HandleSoundtrack(operation=None, container=False, **params):
     oc = ObjectContainer(title2=unicode(params['name']))
 
@@ -259,8 +255,8 @@ def HandleSoundtrack(operation=None, container=False, **params):
 
         oc.add(DirectoryObject(
             key=Callback(HandleTracks, **new_params),
-            title=util.sanitize(album_name),
-            thumb=thumb
+            title=plex_util.sanitize(album_name),
+            thumb=plex_util.get_thumb(thumb)
         ))
 
     if str(container) == 'False':
@@ -269,7 +265,7 @@ def HandleSoundtrack(operation=None, container=False, **params):
 
     return oc
 
-@route(constants.PREFIX + '/selections')
+@route(PREFIX + '/selections')
 def HandleSelections(page=1):
     oc = ObjectContainer(title2=unicode(L('Selections')))
 
@@ -288,15 +284,15 @@ def HandleSelections(page=1):
 
             oc.add(DirectoryObject(
                 key=Callback(HandleSelection, **new_params),
-                title=util.sanitize(name),
-                thumb=item['thumb']
+                title=plex_util.sanitize(name),
+                thumb=plex_util.get_thumb(item['thumb'])
             ))
 
     pagination.append_controls(oc, response, callback=HandleSelections, page=page)
 
     return oc
 
-@route(constants.PREFIX + '/selection')
+@route(PREFIX + '/selection')
 def HandleSelection(page=1, operation=None, **params):
     oc = ObjectContainer(title2=unicode(params['name']))
 
@@ -316,8 +312,8 @@ def HandleSelection(page=1, operation=None, **params):
 
         oc.add(DirectoryObject(
             key=Callback(HandleMovie, **new_params),
-            title=util.sanitize(item['name']),
-            thumb=item['thumb']
+            title=plex_util.sanitize(item['name']),
+            thumb=plex_util.get_thumb(item['thumb'])
         ))
 
     service.queue.append_bookmark_controls(oc, HandleSelection, media_info)
@@ -325,15 +321,15 @@ def HandleSelection(page=1, operation=None, **params):
 
     return oc
 
-@route(constants.PREFIX + '/movie_filters')
+@route(PREFIX + '/movie_filters')
 def HandleMovieFilters():
     return HandleFilters(title="Movie Filters", mode='film')
 
-@route(constants.PREFIX + '/serie_filters')
+@route(PREFIX + '/serie_filters')
 def HandleSerieFilters():
     return HandleFilters(title="Serie Filters", mode='serial')
 
-@route(constants.PREFIX + '/filters')
+@route(PREFIX + '/filters')
 def HandleFilters(title, mode):
     oc = ObjectContainer(title2=unicode(L(title)))
 
@@ -342,12 +338,12 @@ def HandleFilters(title, mode):
     for item in response:
         for name, list in item.iteritems():
             oc.add(DirectoryObject(
-                key=Callback(HandleFilter, mode=mode, name=name, list=json.dumps(list)), title=util.sanitize(name),
+                key=Callback(HandleFilter, mode=mode, name=name, list=json.dumps(list)), title=plex_util.sanitize(name),
             ))
 
     return oc
 
-@route(constants.PREFIX + '/filter')
+@route(PREFIX + '/filter')
 def HandleFilter(mode, name, list):
     oc = ObjectContainer(title2=unicode(name))
 
@@ -362,12 +358,12 @@ def HandleFilter(mode, name, list):
 
         oc.add(DirectoryObject(
             key=Callback(handler, path=path, title=name),
-            title=util.sanitize(name),
+            title=plex_util.sanitize(name),
         ))
 
     return oc
 
-@route(constants.PREFIX + '/tracks')
+@route(PREFIX + '/tracks')
 def HandleTracks(**params):
     oc = ObjectContainer(title2=unicode(params['name']))
 
@@ -392,7 +388,7 @@ def HandleTracks(**params):
 
     return oc
 
-@route(constants.PREFIX + '/track')
+@route(PREFIX + '/track')
 def HandleTrack(container=False, **params):
     if 'm4a' in params['format']:
         audio_container = Container.MP4
@@ -426,7 +422,7 @@ def HandleTrack(container=False, **params):
     else:
         return track
 
-@route(constants.PREFIX + '/search')
+@route(PREFIX + '/search')
 def HandleSearch(query=None, page=1):
     oc = ObjectContainer(title2=unicode(L('Search')))
 
@@ -445,14 +441,14 @@ def HandleSearch(query=None, page=1):
         oc.add(DirectoryObject(
             key=Callback(HandleMovieOrSerie, **new_params),
             title=unicode(name),
-            thumb=thumb
+            thumb=plex_util.get_thumb(thumb)
         ))
 
     pagination.append_controls(oc, response, callback=HandleSearch, query=query, page=page)
 
     return oc
 
-@route(constants.PREFIX + '/movie_or_serie')
+@route(PREFIX + '/movie_or_serie')
 def HandleMovieOrSerie(**params):
     serie_info = service.get_serie_info(params['id'])
 
@@ -463,7 +459,7 @@ def HandleMovieOrSerie(**params):
 
     return HandleContainer(**params)
 
-@route(constants.PREFIX + '/container')
+@route(PREFIX + '/container')
 def HandleContainer(**params):
     type = params['type']
 
@@ -482,7 +478,7 @@ def HandleContainer(**params):
     elif type == 'selection':
         return HandleSelection(**params)
 
-@route(constants.PREFIX + '/queue')
+@route(PREFIX + '/queue')
 def HandleQueue():
     oc = ObjectContainer(title2=unicode(L('Queue')))
 
@@ -496,13 +492,13 @@ def HandleQueue():
 
     return oc
 
-@route(constants.PREFIX + '/clear_queue')
+@route(PREFIX + '/clear_queue')
 def ClearQueue():
     service.queue.clear()
 
     return HandleQueue()
 
-@route(constants.PREFIX + '/history')
+@route(PREFIX + '/history')
 def HandleHistory():
     history_object = history.load_history(Data)
 
@@ -568,22 +564,22 @@ def MediaObjectsForURL(url_items, player):
     return media_objects
 
 @indirect
-@route(constants.PREFIX + '/play_video')
+@route(PREFIX + '/play_video')
 def PlayVideo(url, play_list=True):
     if not url:
-        return util.no_contents()
+        return plex_util.no_contents()
     else:
         if str(play_list) == 'True':
             url = Callback(PlayList, url=url)
 
         return IndirectResponse(MovieObject, key=RTMPVideoURL(url))
 
-@route(constants.PREFIX + '/play_list.m3u8')
+@route(PREFIX + '/play_list.m3u8')
 def PlayList(url):
     play_list = service.get_play_list(url)
 
     return play_list
 
-@route(constants.PREFIX + '/play_audio')
+@route(PREFIX + '/play_audio')
 def PlayAudio(url):
     return Redirect(url)
