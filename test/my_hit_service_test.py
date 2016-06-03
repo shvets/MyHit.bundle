@@ -21,7 +21,7 @@ class MyHitServiceTest(unittest.TestCase):
 
         print(json.dumps(result, indent=4))
 
-    def test_get_serial(self):
+    def test_get_serie_info(self):
         series = self.service.get_all_series()['movies']
 
         serie = series[0]
@@ -68,41 +68,6 @@ class MyHitServiceTest(unittest.TestCase):
 
         print(json.dumps(result, indent=4))
 
-    def test_get_serie_info(self):
-        series = self.service.get_popular_series()['movies']
-
-        serie = series[0]
-
-        result = self.service.get_serie_info(serie['path'])
-
-        print(json.dumps(result, indent=4))
-
-    # def test_get_urls(self):
-    #     movies = self.service.get_popular_movies()['movies']
-    #
-    #     movie = movies[0]
-    #
-    #     print(json.dumps(movie, indent=4))
-    #
-    #     result = self.service.get_urls(path=movie['path'])
-    #
-    #     print(json.dumps(result, indent=4))
-
-    # def test_get_play_list(self):
-    #     movies = self.service.get_popular_movies()['movies']
-    #
-    #     movie = movies[0]
-    #
-    #     urls = self.service.get_urls(movie['path'])
-    #
-    #     print(json.dumps(urls, indent=4))
-    #
-    #     url = urls[0]
-    #
-    #     play_list = self.service.get_play_list(url)
-    #
-    #     print play_list
-
     def test_pagination_in_popular_movies(self):
         result = self.service.get_popular_movies(page=1)
 
@@ -147,25 +112,6 @@ class MyHitServiceTest(unittest.TestCase):
         result = self.service.convert_track_duration(text)
 
         print result
-
-    # def test_get_play_list3(self):
-    #     movies = self.service.get_popular_movies()['movies']
-    #
-    #     movie = movies[0]
-    #
-    #     urls = self.service.get_urls(movie['path'])
-    #
-    #     print urls
-    #
-    #     urls = self.service.get_play_list_urls3(urls[0])
-    #
-    #     print(json.dumps(urls, indent=4))
-
-        # print self.service.http_request(urls[0]).read()
-
-        # play_list = self.service.get_play_list3(urls[0])
-        #
-        # print play_list
 
 if __name__ == '__main__':
     unittest.main()

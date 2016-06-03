@@ -520,6 +520,7 @@ def MetadataObjectForURL(media_info, url_items, player):
     metadata_object.rating_key = unicode(media_info['name'])
     # metadata_object.rating = data['rating']
     metadata_object.thumb = media_info['thumb']
+    metadata_object.title = media_info['name']
     # metadata_object.url = urls['m3u8'][0]
     # metadata_object.art = data['thumb']
     # metadata_object.tags = data['tags']
