@@ -301,13 +301,13 @@ class MyHitService(HttpService):
         return self.get_movies(path=path, page=page)
 
     def get_metadata(self, url):
+        data = []
+
         bandwidth = url[url.find("chunklist_b")+11:url.find(".m3u8")]
 
         source_url = self.get_base_url(url) + "/manifest.f4m"
 
         document = self.fetch_document(source_url)
-
-        data = []
 
         media_block = document.xpath("//manifest/media")
 
