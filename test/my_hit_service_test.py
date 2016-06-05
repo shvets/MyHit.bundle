@@ -30,6 +30,20 @@ class MyHitServiceTest(unittest.TestCase):
 
         print(json.dumps(result, indent=4))
 
+    def test_get_urls(self):
+        path = "/film/414864/"
+
+        result = self.service.get_urls(path=path)
+
+        print(json.dumps(result, indent=4))
+
+    def test_get_media_data(self):
+        path = "/film/414864/"
+
+        result = self.service.get_media_data(path)
+
+        print(json.dumps(result, indent=4))
+
     def test_get_popular_movies(self):
         result = self.service.get_popular_movies()
 

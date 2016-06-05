@@ -12,9 +12,6 @@ class MyHitService(HttpService):
 
         return document.xpath('//div[@class="container"]/div[@class="row"]')
 
-    def is_single_movie(self, path):
-        return True
-
     def get_page_path(self, path, page=1):
         if page == 1:
             new_path = path
@@ -35,14 +32,8 @@ class MyHitService(HttpService):
     def get_popular_series(self, page=1):
         return self.get_series("/serial/?s=3", page=page)
 
-    # def get_selected_movies(self, page=1):
-    #     return self.get_movies("/selection/film", page=page)
-    #
-    # def get_selected_series(self, page=1):
-    #     return self.get_movies("/selection/serial", page=page)
-
     def get_movies(self, path, page=1):
-        list = []
+        data = []
 
         page_path = self.get_page_path(path, page)
 
@@ -58,14 +49,58 @@ class MyHitService(HttpService):
             name = name[:len(name)-18]
             thumb = self.URL + link.xpath('div/img/@src')[0]
 
-            list.append({'path': href, 'thumb': thumb, 'name': name})
+            data.append({'path': href, 'thumb': thumb, 'name': name})
 
         pagination = self.extract_pagination_data(page_path, page=page)
 
-        return {"movies": list, "pagination": pagination["pagination"]}
+        return {"movies": data, "pagination": pagination["pagination"]}
+
+    def get_media_data(self, path):
+        data = {}
+
+        document = self.fetch_document(self.URL + path)
+
+        info_root = document.xpath('//div[@class="row"]/div')
+
+        if len(info_root) > 0:
+            info_node = info_root[0].xpath('//ul[@class="list-unstyled"]')
+
+            for item in info_node[0]:
+                line = item.text_content()
+
+                index = line.find(':')
+
+                key = line[0:index]
+                value = line[index+1:]
+
+                if index >= 0:
+                    if key == u'Продолжительность':
+                        data['duration'] = int(value.replace(u'мин.', '').strip()) * 60 * 1000
+                    elif key == u'Режиссер':
+                        data['directors'] = value.strip().replace('.', '').split(',')
+                    elif key == u'Жанр':
+                        data['tags'] = value.strip().split(',')
+                    else:
+                        data[key] = value
+
+            artists = info_node[1].text_content()
+            artists = artists[len(u'В ролях:'):].split(',')
+
+            data['artists'] = artists
+
+            description_node = info_root[0].xpath('//div[@itemprop="description"]')
+
+            if len(description_node) > 0:
+                description = description_node[0].text_content()
+            else:
+                description = ''
+
+            data['description'] = description
+
+        return data
 
     def get_series(self, path, page=1):
-        list = []
+        data = []
 
         page_path = self.get_page_path(path, page)
 
@@ -81,14 +116,14 @@ class MyHitService(HttpService):
             name = name[:len(name) - 18]
             thumb = self.URL + link.xpath('div/img/@src')[0]
 
-            list.append({'path': href, 'thumb': thumb, 'name': name})
+            data.append({'path': href, 'thumb': thumb, 'name': name})
 
         pagination = self.extract_pagination_data(page_path, page=page)
 
-        return {"movies": list, "pagination": pagination["pagination"]}
+        return {"movies": data, "pagination": pagination["pagination"]}
 
     def get_soundtracks(self, page=1):
-        list = []
+        data = []
 
         page_path = self.get_page_path("/soundtrack/", page)
 
@@ -105,14 +140,14 @@ class MyHitService(HttpService):
 
             thumb = self.URL + link2.xpath('img/@src')[0]
 
-            list.append({'path': href, 'thumb': thumb, 'name': name})
+            data.append({'path': href, 'thumb': thumb, 'name': name})
 
         pagination = self.extract_pagination_data(page_path, page=page)
 
-        return {"movies": self.unique(list, "path"), "pagination": pagination["pagination"]}
+        return {"movies": self.unique(data, "path"), "pagination": pagination["pagination"]}
 
     def get_albums(self, path, page=1):
-        list = []
+        data = []
 
         page_path = self.get_page_path(path, page)
 
@@ -130,7 +165,7 @@ class MyHitService(HttpService):
                     if li.text_content().find('Композитор:'.decode("utf-8")) >= 0:
                         composer = li.text_content()[len('Композитор:'.decode("utf-8")):len(li.text_content())-1]
 
-                list.append({
+                data.append({
                     "thumb": thumb,
                     "name": name,
                     "composer": composer,
@@ -148,17 +183,17 @@ class MyHitService(HttpService):
                 duration = track.xpath('../following-sibling::td')[0].text_content()
                 bitrate = track.xpath('../following-sibling::td')[1].text_content()
 
-                list[index]['tracks'].append({
+                data[index]['tracks'].append({
                   "url": self.URL + track.get("data-file-url") + ".mp3",
                   "name": name,
                   "duration": self.convert_track_duration(duration),
                   "bitrate": int(bitrate)
                 })
 
-        return list
+        return data
 
     def get_selections(self, page=1):
-        list = []
+        data = []
 
         page_path = self.get_page_path("/selection/", page)
 
@@ -174,17 +209,17 @@ class MyHitService(HttpService):
             name = link1.text_content()
             thumb = self.URL + link2.xpath('img/@src')[0]
 
-            list.append({'path': href, 'thumb': thumb, 'name': name})
+            data.append({'path': href, 'thumb': thumb, 'name': name})
 
         pagination = self.extract_pagination_data(page_path, page=page)
 
-        return {"movies": list, "pagination": pagination["pagination"]}
+        return {"movies": data, "pagination": pagination["pagination"]}
 
     def get_selection_id(self, path):
         return path[2:len(path) - 1]
 
     def get_selection(self, path, page=1):
-        list = []
+        data = []
 
         id = self.get_selection_id(path)
         page_path = self.get_page_path("/selection/" + id + '/', page)
@@ -203,14 +238,14 @@ class MyHitService(HttpService):
 
             thumb = self.URL + link.xpath('div/img/@src')[0]
 
-            list.append({'path': href, 'thumb': thumb, 'name': name})
+            data.append({'path': href, 'thumb': thumb, 'name': name})
 
         pagination = self.extract_pagination_data(page_path, page=page)
 
-        return {"movies": list, "pagination": pagination["pagination"]}
+        return {"movies": data, "pagination": pagination["pagination"]}
 
     def get_filters(self, mode='film'):
-        list = []
+        data = []
 
         document = self.fetch_document(self.URL + "/" + mode + "/")
 
@@ -226,7 +261,7 @@ class MyHitService(HttpService):
 
                 name = item.text_content().replace(':', '')
 
-                list.append({name : current_group})
+                data.append({name : current_group})
 
             elif clazz == 'text-nowrap':
                 link = item.xpath("a")[0]
@@ -247,7 +282,7 @@ class MyHitService(HttpService):
 
                     current_group.append({'path': href, 'name': name})
 
-        return list
+        return data
 
     def get_serie_info(self, path):
         serie_info = self.to_json(self.fetch_content(self.URL + path + "/playlist.txt"))['playlist']
@@ -330,24 +365,6 @@ class MyHitService(HttpService):
         else:
             return []
 
-    def get_urls_metadata(self, urls):
-        urls_items = []
-
-        for index, url in enumerate(urls):
-            metadata = self.get_metadata(url)
-
-            urls_items.append({
-                "url": url,
-                "config": {
-                    "width": metadata['width'],
-                    "height": metadata['height'],
-                    "video_resolution": metadata['height'],
-                    "bitrate": metadata['bitrate']
-                }
-            })
-
-        return urls_items
-
     def extract_pagination_data(self, path, page):
         page = int(page)
 
@@ -421,7 +438,7 @@ class MyHitService(HttpService):
         minutes = int(result[0])
         seconds = int(result[1])
 
-        return minutes*60 + seconds
+        return (minutes*60 + seconds) * 1000
 
     def unique(self, elements, key):
         new_elements = []

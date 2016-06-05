@@ -17,6 +17,7 @@ library_bridge.bridge.export_object('Prefs', Prefs)
 library_bridge.bridge.export_object('Locale', Locale)
 library_bridge.bridge.export_object('Callback', Callback)
 library_bridge.bridge.export_object('AudioCodec', AudioCodec)
+library_bridge.bridge.export_object('VideoCodec', VideoCodec)
 library_bridge.bridge.export_object('AudioStreamObject', AudioStreamObject)
 library_bridge.bridge.export_object('VideoStreamObject', VideoStreamObject)
 library_bridge.bridge.export_object('DirectoryObject', DirectoryObject)
@@ -28,8 +29,10 @@ library_bridge.bridge.export_object('MovieObject', MovieObject)
 library_bridge.bridge.export_object('TrackObject', TrackObject)
 library_bridge.bridge.export_object('VideoClipObject', VideoClipObject)
 library_bridge.bridge.export_object('MessageContainer', MessageContainer)
+library_bridge.bridge.export_object('Container', Container)
 
 import plex_util
+import common_routes
 
 from my_hit_plex_service import MyHitPlexService
 
