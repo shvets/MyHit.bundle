@@ -452,6 +452,7 @@ def HandleTrack(container=False, **params):
 
     metadata_object.key = Callback(HandleTrack, container=True, **media_info)
     metadata_object.rating_key = unicode(media_info['name'])
+    metadata_object.title = unicode(media_info['name'])
     metadata_object.duration = int(media_info['duration'])
 
     if 'thumb' in media_info:
