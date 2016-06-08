@@ -2,7 +2,6 @@
 
 import json
 import common_routes
-from collections import OrderedDict
 import plex_util
 import pagination
 import history
@@ -56,9 +55,22 @@ def HandleMovie(operation=None, container=False, **params):
 
     media_data = service.get_media_data(media_info['id'])
 
-    url_items = build_urls_with_metadata(media_info)
+    if 'season' in media_info:
+        season = media_info['season']
+    else:
+        season = None
 
-    if len(url_items.keys()) == 0:
+    if 'episode' in media_info:
+        episode = media_info['episode']
+    else:
+        episode = None
+
+    if season and int(season) > 0 and episode:
+        urls = service.get_urls(url=media_info['id'])
+    else:
+        urls = service.get_urls(path=media_info['id'])
+
+    if len(urls) == 0:
         return plex_util.no_contents()
     else:
         service.queue.handle_bookmark_operation(operation, media_info)
@@ -87,8 +99,12 @@ def HandleMovie(operation=None, container=False, **params):
         if 'directors' in media_info:
             metadata_object.directors = media_data['directors']
 
-        for url, config in url_items.iteritems():
-            media_object = FlowBuilder.build_media_object(Callback(common_routes.PlayVideo, url=url), config)
+        for url in urls:
+            metadata = service.get_metadata(url)
+
+            metadata["video_resolution"] = metadata['height']
+
+            media_object = FlowBuilder.build_media_object(Callback(common_routes.PlayVideo, url=url), metadata)
 
             metadata_object.items.append(media_object)
 
@@ -408,7 +424,7 @@ def HandleTracks(**params):
 def HandleTrack(container=False, **params):
     media_info = MediaInfo(**params)
 
-    url_items = build_audio_urls_with_metadata(media_info)
+    url = media_info['id']
 
     metadata_object = FlowBuilder.build_metadata_object(media_type=media_info['type'], title=media_info['name'])
 
@@ -423,10 +439,19 @@ def HandleTrack(container=False, **params):
     if 'artist' in media_info:
         metadata_object.artist = media_info['artist']
 
-    for url, config in url_items.iteritems():
-        media_object = FlowBuilder.build_media_object(Callback(common_routes.PlayAudio, url=url), config)
+    if 'm4a' in media_info['format']:
+        format = 'm4a'
+    else:
+        format = 'mp3'
 
-        metadata_object.items.append(media_object)
+    metadata = FlowBuilder.get_metadata(format)
+
+    metadata["bitrate"] = media_info['bitrate']
+    metadata["duration"] = media_info['duration']
+
+    media_object = FlowBuilder.build_media_object(Callback(common_routes.PlayAudio, url=url), metadata)
+
+    metadata_object.items.append(media_object)
 
     if container:
         oc = ObjectContainer(title2=unicode(params['name']))
@@ -526,55 +551,3 @@ def HandleHistory():
 
     return oc
 
-def build_urls_with_metadata(media_info):
-    if 'season' in media_info:
-        season = media_info['season']
-    else:
-        season = None
-
-    if 'episode' in media_info:
-        episode = media_info['episode']
-    else:
-        episode = None
-
-    if season and int(season) > 0 and episode:
-        urls = service.get_urls(url=media_info['id'])
-    else:
-        urls = service.get_urls(path=media_info['id'])
-
-    urls_with_metadata = OrderedDict()
-
-    for url in urls:
-        metadata = service.get_metadata(url)
-
-        # config = FlowBuilder.get_plex_config(format)
-        config = {}
-
-        config["width"] = metadata['width']
-        config["height"] = metadata['height']
-        config["video_resolution"] = metadata['height']
-        config["bitrate"] = metadata['bitrate']
-        #config["duration"] = media_info['duration']
-
-        urls_with_metadata[url] = config
-
-    return urls_with_metadata
-
-def build_audio_urls_with_metadata(media_info):
-    if 'm4a' in media_info['format']:
-        format = 'm4a'
-    else:
-        format = 'mp3'
-
-    config = FlowBuilder.get_plex_config(format)
-
-    config["bitrate"] = media_info['bitrate']
-    config["duration"] = media_info['duration']
-
-    url = media_info['id']
-
-    urls_with_metadata = OrderedDict()
-
-    urls_with_metadata[url] = config
-
-    return urls_with_metadata
