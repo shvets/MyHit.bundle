@@ -1,21 +1,7 @@
 import plex_util
-from flow_builder import FlowBuilder
-
 from my_hit_plex_service import MyHitPlexService
 
 service = MyHitPlexService()
-
-def MediaObjectsForURL(urls, player):
-    media_objects = []
-
-    for url, config in urls.iteritems():
-        play_callback = Callback(player, url=url)
-
-        media_object = FlowBuilder.build_media_object(play_callback, config)
-
-        media_objects.append(media_object)
-
-    return media_objects
 
 @indirect
 @route(PREFIX + '/play_video')

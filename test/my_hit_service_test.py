@@ -26,7 +26,7 @@ class MyHitServiceTest(unittest.TestCase):
 
         serie = series[0]
 
-        result = self.service.get_serie_info(serie['path'])
+        result = self.service.get_serie_info('/serial/143')
 
         print(json.dumps(result, indent=4))
 

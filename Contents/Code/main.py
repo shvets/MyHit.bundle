@@ -48,40 +48,6 @@ def HandleMovies(path, title, page=1):
 
     return oc
 
-def build_urls_with_metadata(media_info):
-    if 'season' in media_info:
-        season = media_info['season']
-    else:
-        season = None
-
-    if 'episode' in media_info:
-        episode = media_info['episode']
-    else:
-        episode = None
-
-    if season and int(season) > 0 and episode:
-        urls = service.get_urls(url=media_info['id'])
-    else:
-        urls = service.get_urls(path=media_info['id'])
-
-    urls_with_metadata = OrderedDict()
-
-    for url in urls:
-        metadata = service.get_metadata(url)
-
-        # config = FlowBuilder.get_plex_config(format)
-        config = {}
-
-        config["width"] = metadata['width']
-        config["height"] = metadata['height']
-        config["video_resolution"] = metadata['height']
-        config["bitrate"] = metadata['bitrate']
-        #config["duration"] = media_info['duration']
-
-        urls_with_metadata[url] = config
-
-    return urls_with_metadata
-
 @route(PREFIX + '/movie')
 def HandleMovie(operation=None, container=False, **params):
     oc = ObjectContainer(title2=unicode(L(params['name'])))
@@ -102,14 +68,29 @@ def HandleMovie(operation=None, container=False, **params):
         metadata_object.key = Callback(HandleMovie, container=True, **media_info)
 
         metadata_object.rating_key = unicode(media_info['name'])
-        metadata_object.thumb = media_info['thumb']
-        metadata_object.title = media_info['name']
-        metadata_object.tags = media_data['tags']
-        metadata_object.duration = media_data['duration']
-        metadata_object.summary = media_data['description']
-        metadata_object.directors = media_data['directors']
 
-        metadata_object.items.extend(common_routes.MediaObjectsForURL(url_items, player=common_routes.PlayVideo))
+        if 'thumb' in media_info:
+            metadata_object.thumb = media_info['thumb']
+
+        if 'name' in media_info:
+            metadata_object.title = media_info['name']
+
+        if 'tags' in media_info:
+            metadata_object.tags = media_data['tags']
+
+        if 'duration' in media_info:
+            metadata_object.duration = media_data['duration']
+
+        if 'description' in media_info:
+            metadata_object.summary = media_data['description']
+
+        if 'directors' in media_info:
+            metadata_object.directors = media_data['directors']
+
+        for url, config in url_items.iteritems():
+            media_object = FlowBuilder.build_media_object(Callback(common_routes.PlayVideo, url=url), config)
+
+            metadata_object.items.append(media_object)
 
         oc.add(metadata_object)
 
@@ -423,25 +404,6 @@ def HandleTracks(**params):
 
     return oc
 
-def build_audio_urls_with_metadata(media_info):
-    if 'm4a' in media_info['format']:
-        format = 'm4a'
-    else:
-        format = 'mp3'
-
-    config = FlowBuilder.get_plex_config(format)
-
-    config["bitrate"] = media_info['bitrate']
-    config["duration"] = media_info['duration']
-
-    url = media_info['id']
-
-    urls_with_metadata = OrderedDict()
-
-    urls_with_metadata[url] = config
-
-    return urls_with_metadata
-
 @route(PREFIX + '/track')
 def HandleTrack(container=False, **params):
     media_info = MediaInfo(**params)
@@ -461,7 +423,10 @@ def HandleTrack(container=False, **params):
     if 'artist' in media_info:
         metadata_object.artist = media_info['artist']
 
-    metadata_object.items.extend(common_routes.MediaObjectsForURL(url_items, common_routes.PlayAudio))
+    for url, config in url_items.iteritems():
+        media_object = FlowBuilder.build_media_object(Callback(common_routes.PlayAudio, url=url), config)
+
+        metadata_object.items.append(media_object)
 
     if container:
         oc = ObjectContainer(title2=unicode(params['name']))
@@ -560,3 +525,56 @@ def HandleHistory():
         service.queue.handle_queue_items(oc, HandleContainer, data)
 
     return oc
+
+def build_urls_with_metadata(media_info):
+    if 'season' in media_info:
+        season = media_info['season']
+    else:
+        season = None
+
+    if 'episode' in media_info:
+        episode = media_info['episode']
+    else:
+        episode = None
+
+    if season and int(season) > 0 and episode:
+        urls = service.get_urls(url=media_info['id'])
+    else:
+        urls = service.get_urls(path=media_info['id'])
+
+    urls_with_metadata = OrderedDict()
+
+    for url in urls:
+        metadata = service.get_metadata(url)
+
+        # config = FlowBuilder.get_plex_config(format)
+        config = {}
+
+        config["width"] = metadata['width']
+        config["height"] = metadata['height']
+        config["video_resolution"] = metadata['height']
+        config["bitrate"] = metadata['bitrate']
+        #config["duration"] = media_info['duration']
+
+        urls_with_metadata[url] = config
+
+    return urls_with_metadata
+
+def build_audio_urls_with_metadata(media_info):
+    if 'm4a' in media_info['format']:
+        format = 'm4a'
+    else:
+        format = 'mp3'
+
+    config = FlowBuilder.get_plex_config(format)
+
+    config["bitrate"] = media_info['bitrate']
+    config["duration"] = media_info['duration']
+
+    url = media_info['id']
+
+    urls_with_metadata = OrderedDict()
+
+    urls_with_metadata[url] = config
+
+    return urls_with_metadata

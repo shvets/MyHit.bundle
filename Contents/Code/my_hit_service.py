@@ -55,10 +55,15 @@ class MyHitService(HttpService):
 
         return {"movies": data, "pagination": pagination["pagination"]}
 
-    def get_media_data(self, path):
+    def get_media_data(self, path_or_url):
         data = {}
 
-        document = self.fetch_document(self.URL + path)
+        if path_or_url.find('http://') == 0:
+            url = path_or_url
+        else:
+            url = self.URL + path_or_url
+
+        document = self.fetch_document(url)
 
         info_root = document.xpath('//div[@class="row"]/div')
 
