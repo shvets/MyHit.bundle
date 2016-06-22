@@ -125,6 +125,9 @@ env USERNAME=user HOSTNAME=remote_host invoke rdeploy
 * https://github.com/dagalufh/WebTools.bundle.git
 * https://github.com/kolsys/plex-channel-updater
 
+* https://github.com/coder-alpha/CcloudTv.bundle
+* https://github.com/jwsolve/OnlineMoviesPro.bundle
+
 # Articles
 
 * [A Beginner's Guide to v2.1] [beginner-guide]
